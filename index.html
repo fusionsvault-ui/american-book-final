@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>American Book Founders</title>
+    <meta name="description" content="Professional ghostwriting, book editing, self-publishing, and book marketing services." />
+    <meta property="og:title" content="American Book Founders" />
+    <meta property="og:description" content="Professional ghostwriting, book editing, self-publishing, and book marketing services." />
+    <script>
+      // Global fallback in capture phase to guarantee images never break on any host
+      window.addEventListener('error', function(e) {
+        var el = e.target;
+        if (el && el.tagName === 'IMG') {
+          var src = el.getAttribute('src');
+          if (src && !src.startsWith('http') && !src.startsWith('data:') && !el.dataset.fallbackTried) {
+            el.dataset.fallbackTried = 'true';
+            var normalized = src.startsWith('/') ? src : '/' + src;
+            el.src = 'https://american-book-founderszip--devwork65.replit.app' + normalized;
+          }
+        }
+      }, true);
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -200,22 +200,7 @@ export const WHY_CHOOSE_US_STATS = [
 ];
 
 export const NAV_LINKS = [
-  {
-    label: "About Us",
-    dropdown: [
-      {
-        items: [
-          { label: "Overview & Mission", href: "/about" },
-          { label: "Our Story", href: "/about/our-story" },
-          { label: "Our Team", href: "/about/our-team" },
-          { label: "Why Choose Us", href: "/about/why-choose-us" },
-          { label: "Testimonials", href: "/testimonials" },
-          { label: "Awards & Recognition", href: "/about/awards" },
-          { label: "Contact Us", href: "/contact" }
-        ]
-      }
-    ]
-  },
+  { label: "About Us", href: "/about" },
   {
     label: "Services",
     dropdown: [
@@ -262,6 +247,7 @@ export const NAV_LINKS = [
     dropdown: [
       {
         items: [
+          { label: "All Pricing Plans", href: "/pricing" },
           { label: "Writing Packages", href: "/pricing/writing" },
           { label: "Editing Packages", href: "/pricing/editing" },
           { label: "Publishing Packages", href: "/pricing/publishing" },
