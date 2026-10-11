@@ -1,0 +1,6 @@
+{
+  "name": "American Book Founders",
+  "description": "Professional ghostwriting, book editing, self-publishing, and book marketing services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
