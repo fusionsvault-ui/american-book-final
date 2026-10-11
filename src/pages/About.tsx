@@ -42,7 +42,7 @@ export const About: React.FC = () => {
     {
       year: "2017",
       title: "Ghostwriting Guild Formed",
-      desc: "Assembled a nationwide collective of vetted, native-American ghostwriters with credits across NYT, WSJ, and USA Today bestsellers."
+      desc: "Assembled a nationwide collective of vetted master ghostwriters with credits across NYT, WSJ, and USA Today bestsellers."
     },
     {
       year: "2020",
@@ -82,7 +82,7 @@ export const About: React.FC = () => {
     },
     {
       feature: "Ghostwriting & Editorial Guild",
-      us: "Vetted American Bestsellers (Zero AI)",
+      us: "Vetted Bestselling Ghostwriters (Zero AI)",
       trad: "Junior in-house assistants",
       vanity: "Offshore or automated AI",
     },
@@ -102,8 +102,8 @@ export const About: React.FC = () => {
 
   return (
     <Layout
-      title={cms.seo_about_title || "About American Book Founders — Our Story, Team & Publishing Mission"}
-      description={cms.seo_about_desc || "Learn how American Book Founders became America's most trusted author-first publishing house. 100% royalties, all-American ghostwriters, and over 3,400 published books."}
+      title={cms.seo_about_title || "About Beyond Book Publishing — Our Story, Team & Publishing Mission"}
+      description={cms.seo_about_desc || "Learn how Beyond Book Publishing (BeyondBookpublishing.com) became the most trusted author-first publishing house. 100% royalties, master ghostwriters, and over 3,400 published books."}
     >
       {/* Intro Hero banner */}
       <section className="relative bg-navy text-white py-24 overflow-hidden" id="about-hero">
@@ -171,13 +171,13 @@ export const About: React.FC = () => {
 
               <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
                 <p>
-                  American Book Founders was born out of frustration. Our founders — experienced independent authors and veteran editors — were tired of watching gifted writers surrender their intellectual property, wait three agonizing years for a launch date, and forfeit up to 88% of their royalties to legacy publishing gatekeepers.
+                  Beyond Book Publishing (BeyondBookpublishing.com) was born out of frustration. Our founders — experienced independent authors and veteran editors — were tired of watching gifted writers surrender their intellectual property, wait three agonizing years for a launch date, and forfeit up to 88% of their royalties to legacy publishing gatekeepers.
                 </p>
                 <p>
                   In 2014, we pioneered a different kind of publishing company: <strong>The Author-First Model</strong>. A collaborative environment where writers are treated as equity partners, not corporate commodities. Where your manuscript receives world-class editorial polish, award-winning cover design, and international distribution across 40,000+ bookstores — while every single dollar of your royalty checks goes directly into your bank account.
                 </p>
                 <p>
-                  Today, our collective comprises over 80 vetted American ghostwriters, developmental editors, and literary publicists who have shepherded over 3,400 titles from conceptual sparkle to #1 Amazon Bestseller lists.
+                  Today, our collective comprises over 80 vetted master ghostwriters, developmental editors, and literary publicists who have shepherded over 3,400 titles from conceptual sparkle to #1 Amazon Bestseller lists.
                 </p>
               </div>
 
@@ -185,7 +185,7 @@ export const About: React.FC = () => {
               <div className="grid sm:grid-cols-2 gap-3 pt-2">
                 {[
                   "100% Royalty Ownership",
-                  "All-American Ghostwriting Guild",
+                  "Master Ghostwriting Guild",
                   "100% Copyright Retention",
                   "Dedicated Senior Project Manager",
                   "Milestone Approval Process",
@@ -220,7 +220,7 @@ export const About: React.FC = () => {
               <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-navy">
                 <img
                   src="/assets/writing-desk-CeaHrFGY.png"
-                  alt="American Book Founders editorial desk"
+                  alt="Beyond Book Publishing editorial desk"
                   className="w-full h-[480px] object-cover hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -298,7 +298,7 @@ export const About: React.FC = () => {
               The Truth About Publishing
             </span>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-navy mt-2">
-              How American Book Founders Compares
+              How Beyond Book Publishing Compares
             </h2>
             <p className="text-gray-650 text-sm md:text-base mt-3">
               See why independent authors choose our author-first model over traditional publishing conglomerates and vanity presses.
@@ -311,7 +311,7 @@ export const About: React.FC = () => {
                 <tr className="bg-navy text-white text-left">
                   <th className="py-5 px-6 font-serif font-bold text-base md:text-lg">Publishing Dimension</th>
                   <th className="py-5 px-6 bg-gold text-navy font-serif font-black text-base md:text-lg">
-                    ★ American Book Founders
+                    ★ Beyond Book Publishing
                   </th>
                   <th className="py-5 px-6 font-serif font-bold text-sm md:text-base text-gray-300">
                     Traditional "Big 5"
@@ -442,7 +442,7 @@ export const About: React.FC = () => {
             Ready to Bring Your Book to Life?
           </h2>
           <p className="text-navy/80 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Schedule a complimentary 1-on-1 strategy session with an American senior literary consultant. Discuss your ideas, review outline samples, and receive a customized publishing roadmap.
+            Schedule a complimentary 1-on-1 strategy session with a senior literary consultant at Beyond Book Publishing. Discuss your ideas, review outline samples, and receive a customized publishing roadmap.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <button

@@ -101,7 +101,7 @@ export const GenreSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-serif font-bold text-white leading-tight"
           >
-            We Write Across Every American Genre
+            We Write Across Every Publishing Genre
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 12 }}

@@ -19,7 +19,7 @@ export const Testimonials: React.FC = () => {
       stars: 5,
     },
     {
-      quote: "American Book Founders handled my sci-fi epic layout formatting. The final formats build beautifully on Kindle and Paperback prints alike.",
+      quote: "Beyond Book Publishing handled my sci-fi epic layout formatting. The final formats build beautifully on Kindle and Paperback prints alike.",
       name: "Toby Vance",
       title: "Sci-Fi Author",
       genre: "Fantasy & Sci-Fi",
@@ -37,7 +37,7 @@ export const Testimonials: React.FC = () => {
   return (
     <Layout
       title={cms.seo_testimonials_title || "Verified Author Reviews & Testimonials"}
-      description={cms.seo_testimonials_desc || "Read verified testimonials and satisfaction reviews from published authors. See how American Book Founders ghostwriting helped them find success."}
+      description={cms.seo_testimonials_desc || "Read verified testimonials and satisfaction reviews from published authors. See how Beyond Book Publishing (BeyondBookpublishing.com) helped them find success."}
     >
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="testimonials-banner">

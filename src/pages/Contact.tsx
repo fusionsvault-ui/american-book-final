@@ -38,8 +38,8 @@ export const Contact: React.FC = () => {
 
   return (
     <Layout
-      title={cms.seo_contact_title || "Contact Our Senior Book Editors Today"}
-      description={cms.seo_contact_desc || "Connect directly with American Book Founders consultants. Schedule a free 30-minute phone strategy call to estimate pricing fees & publish your book."}
+      title={cms.seo_contact_title || "Contact Our Senior Publishing Advisors"}
+      description={cms.seo_contact_desc || "Connect directly with Beyond Book Publishing (BeyondBookpublishing.com) consultants. Schedule a free 30-minute phone strategy call to estimate pricing fees & publish your book."}
     >
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="contact-banner">
@@ -90,8 +90,8 @@ export const Contact: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Consulting Inquiries</p>
-                      <a href="mailto:info@americanbookfounders.com" className="font-semibold text-sm md:text-base text-white hover:text-gold transition-colors">
-                        info@americanbookfounders.com
+                      <a href="mailto:info@beyondbookpublishing.com" className="font-semibold text-sm md:text-base text-white hover:text-gold transition-colors">
+                        info@beyondbookpublishing.com
                       </a>
                     </div>
                   </div>
@@ -115,7 +115,7 @@ export const Contact: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Headquarters Location</p>
-                      <p className="text-sm text-gray-250 font-medium">American Book Founders Central, NY, USA</p>
+                      <p className="text-sm text-gray-250 font-medium">Beyond Book Publishing Suite, Manhattan, NY, USA</p>
                     </div>
                   </div>
                 </div>

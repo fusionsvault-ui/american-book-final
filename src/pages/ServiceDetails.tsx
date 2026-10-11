@@ -211,8 +211,8 @@ export const ServiceDetails: React.FC = () => {
 
   return (
     <Layout
-      title={`${service.title} - American Book Founders`}
-      description={`${service.title} — ${service.tagline} Professional ${service.category.toLowerCase()} services at American Book Founders.`}
+      title={`${service.title} - Beyond Book Publishing`}
+      description={`${service.title} — ${service.tagline} Professional ${service.category.toLowerCase()} services at Beyond Book Publishing (BeyondBookpublishing.com).`}
     >
       <QuoteModal
         open={modalOpen}

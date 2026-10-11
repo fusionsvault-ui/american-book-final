@@ -20,7 +20,7 @@ export const Portfolio: React.FC = () => {
   return (
     <Layout
       title={cms.seo_portfolio_title || "Our Published Books Showcase Gallery"}
-      description={cms.seo_portfolio_desc || "Browse dozens of beautiful novels, memoirs, business guides, children books, and thrillers designed and published by American Book Founders."}
+      description={cms.seo_portfolio_desc || "Browse dozens of beautiful novels, memoirs, business guides, children books, and thrillers designed and published by Beyond Book Publishing (BeyondBookpublishing.com)."}
     >
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="portfolio-banner">

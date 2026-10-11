@@ -1,4 +1,4 @@
-// Shared TypeScript Types for American Book Founders
+// Shared TypeScript Types for Beyond Book Publishing (BeyondBookpublishing.com)
 
 export interface ServiceProcessStep {
   step: string;
@@ -65,11 +65,16 @@ export interface PricingPackageItem {
 }
 
 export interface BlogPostItem {
-  img: string;
-  category: string;
+  id?: string;
+  slug: string;
   title: string;
+  category: string;
   excerpt: string;
+  content: string;
   author: string;
+  authorRole: string;
   date: string;
   readTime: string;
+  img: string;
+  tags?: string[];
 }

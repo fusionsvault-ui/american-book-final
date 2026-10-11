@@ -32,7 +32,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Ghost Writing",
     "tagline": "Your story, written by experts.",
     "category": "Book Writing",
-    "img": "https://americanbookfounders.com/assets/images/leave-a-lasting.webp",
+    "img": "/service-ghostwriting.jpg",
     "gallery": [
       "/service-ghostwriting.jpg",
       "/gal-ghost-2.jpg",
@@ -122,7 +122,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Writing",
     "tagline": "From blank page to published author.",
     "category": "Book Writing",
-    "img": "https://americanbookfounders.com/assets/images/do-you-want-your-writing.webp",
+    "img": "/svc-book-writing.jpg",
     "gallery": [
       "/svc-book-writing.jpg",
       "/gal-bookwrite-2.jpg",
@@ -212,7 +212,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Memoir Writing",
     "tagline": "Preserve your legacy in print.",
     "category": "Book Writing",
-    "img": "https://americanbookfounders.com/assets/images/need-a-way-out.webp",
+    "img": "/svc-memoir.jpg",
     "gallery": [
       "/svc-memoir.jpg",
       "/gal-memoir-2.jpg",
@@ -302,7 +302,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Biography Writing",
     "tagline": "Tell the story of an extraordinary life.",
     "category": "Book Writing",
-    "img": "https://americanbookfounders.com/assets/images/concerned-about-your-manuscript.webp",
+    "img": "/svc-biography.jpg",
     "gallery": [
       "/svc-biography.jpg",
       "/gal-bio-2.jpg",
@@ -492,7 +492,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Proofreading",
     "tagline": "Catch every error before it reaches readers.",
     "category": "Book Editing",
-    "img": "https://americanbookfounders.com/assets/images/editing-expertise.webp",
+    "img": "/service-editing.jpg",
     "gallery": [
       "/service-editing.jpg",
       "/gal-proof-2.jpg",
@@ -582,7 +582,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Copy Editing",
     "tagline": "Sharpen your prose to perfection.",
     "category": "Book Editing",
-    "img": "https://americanbookfounders.com/assets/images/quick-and-affordable.webp",
+    "img": "/service-editing.jpg",
     "gallery": [
       "/service-editing.jpg",
       "/gal-copyedit-2.jpg",
@@ -672,7 +672,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Self Publishing",
     "tagline": "Publish on your terms, keep your royalties.",
     "category": "Publishing",
-    "img": "https://americanbookfounders.com/assets/images/make-an-irreversible-impression.webp",
+    "img": "/service-publishing.jpg",
     "gallery": [
       "/service-publishing.jpg",
       "/gal-pub-2.jpg",
@@ -762,7 +762,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "eBook Publishing",
     "tagline": "Reach millions of digital readers.",
     "category": "Publishing",
-    "img": "https://americanbookfounders.com/assets/images/our-ebook-writing.webp",
+    "img": "/svc-ebook.jpg",
     "gallery": [
       "/svc-ebook.jpg",
       "/gal-ebook-2.jpg",
@@ -852,7 +852,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Print-on-Demand",
     "tagline": "Sell physical books with zero inventory.",
     "category": "Publishing",
-    "img": "https://americanbookfounders.com/assets/images/typesetting-and-formatting.svg",
+    "img": "/svc-print-demand.jpg",
     "gallery": [
       "/svc-print-demand.jpg",
       "/gal-print-2.jpg",
@@ -942,7 +942,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Cover Design",
     "tagline": "A cover that sells before they read page one.",
     "category": "Book Marketing",
-    "img": "https://americanbookfounders.com/assets/images/creative-book-cover-designs.webp",
+    "img": "/service-cover-design.jpg",
     "gallery": [
       "/service-cover-design.jpg",
       "/gal-cover-2.jpg",
@@ -1032,7 +1032,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Audiobook Production",
     "tagline": "Bring your book to life with professional audio.",
     "category": "Book Marketing",
-    "img": "https://americanbookfounders.com/assets/images/book-mockup.webp",
+    "img": "/service-audiobook.jpg",
     "gallery": [
       "/service-audiobook.jpg",
       "/gal-audio-2.jpg",
@@ -1122,7 +1122,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Author Website",
     "tagline": "Your professional home on the internet.",
     "category": "Book Marketing",
-    "img": "https://americanbookfounders.com/assets/images/why-not-be-a-best-seller.webp",
+    "img": "/svc-author-website.jpg",
     "gallery": [
       "/svc-author-website.jpg",
       "/gal-web-2.jpg",
@@ -1212,7 +1212,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Social Media Marketing",
     "tagline": "Build your author brand where readers live.",
     "category": "Book Marketing",
-    "img": "https://americanbookfounders.com/assets/images/only-5per-to-10per.webp",
+    "img": "/service-marketing.jpg",
     "gallery": [
       "/service-marketing.jpg",
       "/gal-social-2.jpg",
@@ -1302,7 +1302,7 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Trailer",
     "tagline": "A cinematic preview that sells your book.",
     "category": "Book Marketing",
-    "img": "https://americanbookfounders.com/assets/images/audience-oriented.webp",
+    "img": "/svc-book-trailer.jpg",
     "gallery": [
       "/svc-book-trailer.jpg",
       "/gal-trailer-2.jpg",

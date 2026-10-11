@@ -14,12 +14,22 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({
   children,
-  title = "America's Best Publishing Partner",
+  title = "Beyond Book Publishing – Professional Ghostwriting, Editing & Book Publishing",
   description,
 }) => {
   // Update document title and description meta if they change
   useEffect(() => {
-    document.title = `${title} | American Book Founders`;
+    const fullTitle = title.includes("Beyond Book")
+      ? title
+      : `${title} | Beyond Book Publishing`;
+    document.title = fullTitle;
+
+    // Update OpenGraph and Twitter titles
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", fullTitle);
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twTitle) twTitle.setAttribute("content", fullTitle);
+
     if (description) {
       const meta = document.querySelector('meta[name="description"]');
       if (meta) {
@@ -30,6 +40,11 @@ export const Layout: React.FC<LayoutProps> = ({
         newMeta.content = description;
         document.head.appendChild(newMeta);
       }
+
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute("content", description);
+      const twDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twDesc) twDesc.setAttribute("content", description);
     }
   }, [title, description]);
 

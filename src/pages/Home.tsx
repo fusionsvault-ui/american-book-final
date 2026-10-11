@@ -59,7 +59,7 @@ export const Home: React.FC = () => {
   const heroData = {
     eyebrow: cms.hero_eyebrow || "Become A Self-Published Author:",
     headline: cms.hero_headline || "Control Your Work, Share Your Voice, And Keep 100% Of Your Royalties",
-    subText: cms.hero_subtext || 'American Book Founders team of experts will work very hard on your book, help you get it published, and make you a "stunning author." Join hands with the authentic and powerful team of creative book writers!',
+    subText: cms.hero_subtext || 'Beyond Book Publishing (BeyondBookpublishing.com) pairs authors with a master guild of bestselling ghostwriters, veteran editors, and global distribution specialists. Keep 100% of your earnings, copyright, and creative freedom.',
     bullets: [
       "Not able to write a great manuscript?",
       "Are you frustrated with waiting for approvals?",
@@ -108,7 +108,7 @@ export const Home: React.FC = () => {
 
   // Made in America checks list
   const voiceChecks = [
-    { icon: <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />, label: "All-American Writers" },
+    { icon: <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />, label: "Master Guild Writers" },
     { icon: <Award className="w-4 h-4 text-gold flex-shrink-0" />, label: "Unlimited revisions" },
     { icon: <BookOpen className="w-4 h-4 text-gold flex-shrink-0" />, label: "Full creative control" },
     { icon: <Phone className="w-4 h-4 text-gold flex-shrink-0" />, label: "1-on-1 consultations" }
@@ -143,8 +143,8 @@ export const Home: React.FC = () => {
 
   return (
     <Layout
-      title={cms.seo_home_title || "American Book Founders - Professional Book Writing, Editing, and Publishing Pages"}
-      description={cms.seo_home_desc || "Upgrade to premium book production with American Book Founders. Capturing your voice across every American genre. Keep 100% of your royalties and copyright."}
+      title={cms.seo_home_title || "Beyond Book Publishing – Professional Ghostwriting, Editing & Book Publishing"}
+      description={cms.seo_home_desc || "Upgrade to premium book production with Beyond Book Publishing (BeyondBookpublishing.com). Capturing your voice across every genre. Keep 100% of your royalties and copyright."}
     >
       {/* Dynamic Consultation Quote Modal overlay */}
       <QuoteModal
@@ -676,31 +676,31 @@ export const Home: React.FC = () => {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-block text-gold text-xs font-bold uppercase tracking-widest bg-navy px-3.5 py-1.5 rounded-sm shadow-sm">
-                  About American Book Founders
+                  About Beyond Book Publishing
                 </span>
                 <span className="inline-block text-navy text-xs font-bold uppercase tracking-widest bg-gold/20 border border-gold/40 px-3.5 py-1.5 rounded-sm">
-                  ★ 100% Made in America
+                  ★ 100% Author-First
                 </span>
               </div>
 
               <h2 className="text-3xl md:text-5xl font-serif font-black text-navy leading-tight">
-                Built by Authors, for Authors — America’s Most Trusted Publishing Partner
+                Built by Authors, for Authors — America’s Premier Author-First Publishing Partner
               </h2>
 
               <p className="text-gray-700 text-sm md:text-base leading-relaxed">
-                American Book Founders was built on a simple conviction: <strong>every author deserves the caliber of a top-tier Manhattan publishing house without surrendering their rights, royalties, or creative freedom.</strong>
+                Beyond Book Publishing (BeyondBookpublishing.com) was built on a simple conviction: <strong>every author deserves the caliber of a top-tier Manhattan publishing house without surrendering their rights, royalties, or creative freedom.</strong>
               </p>
 
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Whether you have an unwritten concept, a partial manuscript, or a complete book ready for world-class publishing, our all-American guild of bestselling ghostwriters, veteran editors, and marketing strategists brings your vision to life.
+                Whether you have an unwritten concept, a partial manuscript, or a complete book ready for world-class publishing, our elite guild of bestselling ghostwriters, veteran editors, and marketing strategists brings your vision to life.
               </p>
               
               {/* Core Pillars */}
               <div className="grid sm:grid-cols-2 gap-3.5 pt-1">
                 {[
                   { title: "100% Royalty Ownership", desc: "You keep all earnings & retain 100% copyright", icon: "💎" },
-                  { title: "All-American Guild", desc: "Vetted NYT & indie bestselling writers, zero AI", icon: "🇺🇸" },
-                  { title: "Bespoke Voice Matching", desc: "Every sentence tailored to your distinct tone", icon: "✍️" },
+                  { title: "Master Author Guild", desc: "Vetted NYT & indie bestselling writers, zero AI", icon: "✍️" },
+                  { title: "Bespoke Voice Matching", desc: "Every sentence tailored to your distinct tone", icon: "🎙️" },
                   { title: "Worldwide Distribution", desc: "Amazon, Barnes & Noble, Apple & 40k+ libraries", icon: "🌍" },
                 ].map((pillar, idx) => (
                   <div key={idx} className="bg-white rounded-lg p-3.5 shadow-sm border border-gray-200/80 flex items-start gap-3">
@@ -760,7 +760,7 @@ export const Home: React.FC = () => {
               <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white mt-4 bg-navy">
                 <img 
                   src={cms.hero_image_url || "/assets/writing-desk-CeaHrFGY.png"} 
-                  alt={cms.hero_image_alt || "American Writing Desk - American Book Founders"} 
+                  alt={cms.hero_image_alt || "Beyond Book Publishing Editorial Desk"} 
                   className="w-full h-[450px] object-cover hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;

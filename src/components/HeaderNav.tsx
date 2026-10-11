@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { ChevronDown, Menu, X, Phone } from "lucide-react";
+import { ChevronDown, Menu, X, Phone, BookOpen } from "lucide-react";
 import { useCMS } from "./CMSContext";
 import { NAV_LINKS } from "../data/websiteData";
 import { QuoteModal } from "./QuoteModal";
@@ -90,16 +90,16 @@ export const HeaderNav: React.FC = () => {
       >
         <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
           {/* Logo Brand Tag */}
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="w-10 h-10 bg-navy rounded flex items-center justify-center overflow-hidden">
-              <div className="w-5 h-5 bg-gold rotate-45 transform group-hover:rotate-90 transition-transform duration-500" />
+          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
+            <div className="w-10 h-10 bg-navy rounded-lg flex items-center justify-center overflow-hidden shadow-sm group-hover:bg-gold transition-colors">
+              <BookOpen className="w-5 h-5 text-gold group-hover:text-navy transition-colors" />
             </div>
             <div className="flex flex-col">
-              <span className="font-serif font-bold text-xl leading-tight text-navy">
-                American Book
+              <span className="font-serif font-black text-xl leading-tight text-navy tracking-tight group-hover:text-gold transition-colors">
+                Beyond Book
               </span>
-              <span className="font-sans text-xs font-semibold tracking-widest text-gray-500 uppercase leading-none">
-                Founders
+              <span className="font-sans text-[10px] md:text-xs font-bold tracking-[0.2em] text-gold uppercase leading-none">
+                Publishing
               </span>
             </div>
           </Link>

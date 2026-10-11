@@ -1,0 +1,13 @@
+# robots.txt for Beyond Book Publishing
+# Domain: https://beyondbookpublishing.com
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Sitemaps
+Sitemap: https://beyondbookpublishing.com/sitemap.xml
+
+# LLM & AI agent instructions
+# See: https://beyondbookpublishing.com/llms.txt

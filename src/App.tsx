@@ -11,6 +11,7 @@ import { Blog } from "./pages/Blog";
 import { Contact } from "./pages/Contact";
 import { Testimonials } from "./pages/Testimonials";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { Policy } from "./pages/Policy";
 import { NotFound } from "./pages/NotFound";
 
 export default function App() {
@@ -29,8 +30,13 @@ export default function App() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/pricing/:category" component={Pricing} />
         <Route path="/blog" component={Blog} />
+        <Route path="/blog/:slug" component={Blog} />
         <Route path="/contact" component={Contact} />
         <Route path="/testimonials" component={Testimonials} />
+        <Route path="/privacy-policy" component={Policy} />
+        <Route path="/terms-of-service" component={Policy} />
+        <Route path="/privacy" component={Policy} />
+        <Route path="/terms" component={Policy} />
         <Route path="/admin" component={AdminDashboard} />
         <Route component={NotFound} />
       </Switch>
