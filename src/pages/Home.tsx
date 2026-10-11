@@ -725,7 +725,7 @@ export const Home: React.FC = () => {
                   href="/about"
                   className="inline-flex items-center gap-2 border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold px-6 h-13 rounded-md transition-all text-sm cursor-pointer"
                 >
-                  <span>Our Story & Team</span>
+                  <span>Learn More About Us</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
