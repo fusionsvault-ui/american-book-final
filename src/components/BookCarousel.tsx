@@ -104,7 +104,12 @@ const EmblaSliderRow: React.FC<SliderProps> = ({ books, reverse = false }) => {
                     alt={`${book.title} cover`}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.includes("unsplash")) {
+                        target.src = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400";
+                      }
+                    }}
                   />
                   {/* Genre Tag */}
                   <div className="absolute top-3 left-3 z-10">

@@ -133,7 +133,12 @@ export const GenreSection: React.FC = () => {
                 alt={`${genre.name} background`}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
-                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.includes("unsplash")) {
+                    target.src = "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=600";
+                  }
+                }}
               />
 
               {/* Cover layout overlay */}
@@ -146,7 +151,12 @@ export const GenreSection: React.FC = () => {
                   alt={`${genre.name} cover teaser`}
                   className="w-full h-full object-cover"
                   loading="lazy"
-                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes("unsplash")) {
+                      target.src = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400";
+                    }
+                  }}
                 />
               </div>
 

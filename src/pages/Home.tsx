@@ -652,7 +652,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ================= MADE IN AMERICA TRUELY (fO.js restored with real micro Flag!) ================= */}
+      {/* ================= ABOUT US / MADE IN AMERICA SECTION ================= */}
       <section 
         className="relative py-24 overflow-hidden"
         style={{
@@ -660,59 +660,86 @@ export const Home: React.FC = () => {
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
-        id="home-crafted-voice-american-standard"
+        id="home-about-us-section"
       >
-        <div className="absolute inset-0 bg-[#f7f4ef]/93 z-0" />
+        <div className="absolute inset-0 bg-[#f7f4ef]/95 z-0" />
         
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             
-            {/* Left Box */}
+            {/* Left Box: Story & Guarantees */}
             <motion.div 
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <span className="inline-block text-gold text-sm font-bold uppercase tracking-widest bg-navy px-3 py-1 rounded-sm shadow-sm">
-                Made in America
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-block text-gold text-xs font-bold uppercase tracking-widest bg-navy px-3.5 py-1.5 rounded-sm shadow-sm">
+                  About American Book Founders
+                </span>
+                <span className="inline-block text-navy text-xs font-bold uppercase tracking-widest bg-gold/20 border border-gold/40 px-3.5 py-1.5 rounded-sm">
+                  ★ 100% Made in America
+                </span>
+              </div>
+
               <h2 className="text-3xl md:text-5xl font-serif font-black text-navy leading-tight">
-                We Will Work With You To Find Your Voice And Add a Custom Touch To Your Writing
+                Built by Authors, for Authors — America’s Most Trusted Publishing Partner
               </h2>
-              <p className="text-gray-650 text-sm md:text-lg leading-relaxed">
-                Every author has a unique story to tell. Our all-American team of ghostwriters and editors doesn't do one-size-fits-all — we tailor every word to match your tone, your style, and your vision.
+
+              <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                American Book Founders was built on a simple conviction: <strong>every author deserves the caliber of a top-tier Manhattan publishing house without surrendering their rights, royalties, or creative freedom.</strong>
+              </p>
+
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                Whether you have an unwritten concept, a partial manuscript, or a complete book ready for world-class publishing, our all-American guild of bestselling ghostwriters, veteran editors, and marketing strategists brings your vision to life.
               </p>
               
-              {/* Voice list points */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                {voiceChecks.map((check, idx) => (
-                  <div key={idx} className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 shadow-md border border-gray-100">
-                    <span>{check.icon}</span>
-                    <span className="text-navy font-bold text-xs md:text-sm">{check.label}</span>
+              {/* Core Pillars */}
+              <div className="grid sm:grid-cols-2 gap-3.5 pt-1">
+                {[
+                  { title: "100% Royalty Ownership", desc: "You keep all earnings & retain 100% copyright", icon: "💎" },
+                  { title: "All-American Guild", desc: "Vetted NYT & indie bestselling writers, zero AI", icon: "🇺🇸" },
+                  { title: "Bespoke Voice Matching", desc: "Every sentence tailored to your distinct tone", icon: "✍️" },
+                  { title: "Worldwide Distribution", desc: "Amazon, Barnes & Noble, Apple & 40k+ libraries", icon: "🌍" },
+                ].map((pillar, idx) => (
+                  <div key={idx} className="bg-white rounded-lg p-3.5 shadow-sm border border-gray-200/80 flex items-start gap-3">
+                    <span className="text-xl select-none mt-0.5">{pillar.icon}</span>
+                    <div>
+                      <p className="text-navy font-bold text-xs md:text-sm">{pillar.title}</p>
+                      <p className="text-gray-500 text-xs mt-0.5 leading-snug">{pillar.desc}</p>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-4">
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-wrap items-center gap-4">
                 <button 
-                  onClick={() => openConsultation("custom-voice-desk")}
-                  className="bg-gold hover:bg-yellow-400 text-navy font-extrabold px-8 h-14 rounded-md shadow-lg inline-flex items-center justify-center cursor-pointer active:scale-98 transition-all hover:scale-102"
+                  onClick={() => openConsultation("home-about-desk")}
+                  className="bg-gold hover:bg-yellow-400 text-navy font-extrabold px-8 h-13 rounded-md shadow-lg inline-flex items-center justify-center cursor-pointer active:scale-98 transition-all hover:scale-102 text-sm"
                 >
                   Get A Free Consultation
                 </button>
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-2 border-2 border-navy text-navy hover:bg-navy hover:text-white font-bold px-6 h-13 rounded-md transition-all text-sm cursor-pointer"
+                >
+                  <span>Our Story & Team</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </motion.div>
 
-            {/* Right Side Visual with our custom CSS American Flag corner micro ornament! */}
+            {/* Right Side Visual with American Flag ornament */}
             <motion.div 
-              initial={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="relative"
             >
-              {/* CSS Created Stripes of the American flag */}
-              <div className="absolute -top-4 -left-4 w-full h-3 flex gap-0.5 rounded overflow-hidden z-10">
+              {/* CSS American flag stripes */}
+              <div className="absolute -top-4 -left-4 w-full h-3 flex gap-0.5 rounded overflow-hidden z-10 shadow-sm">
                 {Array.from({ length: 13 }).map((_, idx) => (
                   <div 
                     key={idx} 
@@ -722,20 +749,25 @@ export const Home: React.FC = () => {
                 ))}
               </div>
               
-              {/* CSS Created Union Blue canton field with gold star dots */}
-              <div className="absolute -top-4 -left-4 w-8 h-6 bg-[#3C3B6E] z-10 rounded-sm flex flex-wrap gap-0.5 items-center justify-center p-0.5 shadow-md">
+              {/* Canton field */}
+              <div className="absolute -top-4 -left-4 w-9 h-6 bg-[#3C3B6E] z-10 rounded-sm flex flex-wrap gap-0.5 items-center justify-center p-0.5 shadow-md">
                 {Array.from({ length: 9 }).map((_, idx) => (
                   <span key={idx} className="text-[4px] leading-none text-white font-bold select-none">★</span>
                 ))}
               </div>
 
-              {/* Central Desk Image mock */}
+              {/* Writing Desk Image */}
               <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white mt-4 bg-navy">
                 <img 
                   src={cms.hero_image_url || "/assets/writing-desk-CeaHrFGY.png"} 
-                  alt={cms.hero_image_alt || "American Writing Desk"} 
+                  alt={cms.hero_image_alt || "American Writing Desk - American Book Founders"} 
                   className="w-full h-[450px] object-cover hover:scale-105 transition-transform duration-700"
-                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes("unsplash")) {
+                      target.src = "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=800";
+                    }
+                  }}
                 />
               </div>
 
@@ -743,10 +775,16 @@ export const Home: React.FC = () => {
               <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-gold/90 rounded-xl -z-10 shadow-sm" />
               <div className="absolute -top-4 -right-8 w-32 h-32 border-4 border-navy rounded-xl -z-10" />
 
-              {/* Counter Float Card Overlay */}
+              {/* Counter Float Card Overlay 1 */}
               <div className="absolute bottom-6 -right-4 bg-navy text-white px-5 py-3 rounded-xl shadow-2xl border border-white/10">
-                <div className="text-2xl font-serif font-black text-gold">500+</div>
+                <div className="text-2xl font-serif font-black text-gold">3,400+</div>
                 <div className="text-[10px] text-gray-300 font-bold uppercase tracking-wider">Books Published</div>
+              </div>
+
+              {/* Trust Float Card Overlay 2 */}
+              <div className="absolute -top-3 right-6 bg-white text-navy px-4 py-2.5 rounded-lg shadow-xl border border-gray-100 flex items-center gap-2">
+                <div className="flex text-gold text-xs">★★★★★</div>
+                <span className="text-xs font-bold text-navy">98% Satisfaction</span>
               </div>
             </motion.div>
 

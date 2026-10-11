@@ -118,24 +118,24 @@ export const TEAM_MEMBERS: TeamMemberItem[] = [
 ];
 
 export const PORTFOLIO_BOOKS: PortfolioBookItem[] = [
-  { img: "https://americanbookfounders.com/assets/images/book-cover-1.webp", title: "The Silent Witness", author: "Eleanor Vance", genre: "True Crime", rating: "4.9", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-2.webp", title: "Golden Hour", author: "Amelia Rose", genre: "Romance", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-3.webp", title: "The Dragon's Blade", author: "Lara Vance", genre: "Fantasy", rating: "4.9", year: "2022" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-4.webp", title: "The Sundered Dawn", author: "Ava Reid", genre: "Biblical", rating: "4.7", year: "2022" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-5.webp", title: "Rising Sun", author: "Kaizen Moore", genre: "Human Resources", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-6.webp", title: "The Final Act", author: "Elara Stone", genre: "Illustration", rating: "4.9", year: "2021" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-7.webp", title: "Shadow Protocol", author: "J.R. Black", genre: "Real Estate", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-8.webp", title: "Nightfall Manor", author: "D. Thorne", genre: "Fantasy", rating: "4.7", year: "2022" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-1.webp", title: "Crown of Embers", author: "M.K. Davis", genre: "Fantasy", rating: "4.9", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-2.webp", title: "Midnight in Manhattan", author: "Clara Bell", genre: "Romance", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-3.webp", title: "Dust & Thunder", author: "Tom Rider", genre: "Illustration", rating: "4.7", year: "2022" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-4.webp", title: "The Evidence Board", author: "Sara Hill", genre: "True Crime", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-5.webp", title: "Sunrise Over America", author: "L. Foster", genre: "Memoir", rating: "4.9", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-6.webp", title: "Beyond the Rings", author: "A. Turing", genre: "Biblical", rating: "4.8", year: "2022" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-7.webp", title: "Storm Caller", author: "Y. Tanaka", genre: "Fantasy", rating: "4.7", year: "2021" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-8.webp", title: "The Last Grave", author: "C. Rivera", genre: "True Crime", rating: "4.8", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-1.webp", title: "Dead Reckoning", author: "P. Stone", genre: "Human Resources", rating: "4.9", year: "2023" },
-  { img: "https://americanbookfounders.com/assets/images/book-cover-3.webp", title: "Ember & Ash", author: "W. James", genre: "Fantasy", rating: "4.8", year: "2022" }
+  { img: "/book-cover-1.webp", title: "The Silent Witness", author: "Eleanor Vance", genre: "True Crime", rating: "4.9", year: "2023" },
+  { img: "/book-cover-2.webp", title: "Golden Hour", author: "Amelia Rose", genre: "Romance", rating: "4.8", year: "2023" },
+  { img: "/book-cover-3.webp", title: "The Dragon's Blade", author: "Lara Vance", genre: "Fantasy", rating: "4.9", year: "2022" },
+  { img: "/book-cover-4.webp", title: "The Sundered Dawn", author: "Ava Reid", genre: "Biblical", rating: "4.7", year: "2022" },
+  { img: "/book-cover-5.webp", title: "Rising Sun", author: "Kaizen Moore", genre: "Human Resources", rating: "4.8", year: "2023" },
+  { img: "/book-cover-6.webp", title: "The Final Act", author: "Elara Stone", genre: "Illustration", rating: "4.9", year: "2021" },
+  { img: "/book-cover-7.webp", title: "Shadow Protocol", author: "J.R. Black", genre: "Real Estate", rating: "4.8", year: "2023" },
+  { img: "/book-cover-8.webp", title: "Nightfall Manor", author: "D. Thorne", genre: "Fantasy", rating: "4.7", year: "2022" },
+  { img: "/book-cover-1.webp", title: "Crown of Embers", author: "M.K. Davis", genre: "Fantasy", rating: "4.9", year: "2023" },
+  { img: "/book-cover-2.webp", title: "Midnight in Manhattan", author: "Clara Bell", genre: "Romance", rating: "4.8", year: "2023" },
+  { img: "/book-cover-3.webp", title: "Dust & Thunder", author: "Tom Rider", genre: "Illustration", rating: "4.7", year: "2022" },
+  { img: "/book-cover-4.webp", title: "The Evidence Board", author: "Sara Hill", genre: "True Crime", rating: "4.8", year: "2023" },
+  { img: "/book-cover-5.webp", title: "Sunrise Over America", author: "L. Foster", genre: "Memoir", rating: "4.9", year: "2023" },
+  { img: "/book-cover-6.webp", title: "Beyond the Rings", author: "A. Turing", genre: "Biblical", rating: "4.8", year: "2022" },
+  { img: "/book-cover-7.webp", title: "Storm Caller", author: "Y. Tanaka", genre: "Fantasy", rating: "4.7", year: "2021" },
+  { img: "/book-cover-8.webp", title: "The Last Grave", author: "C. Rivera", genre: "True Crime", rating: "4.8", year: "2023" },
+  { img: "/book-cover-1.webp", title: "Dead Reckoning", author: "P. Stone", genre: "Human Resources", rating: "4.9", year: "2023" },
+  { img: "/book-cover-3.webp", title: "Ember & Ash", author: "W. James", genre: "Fantasy", rating: "4.8", year: "2022" }
 ];
 
 export const PORTFOLIO_FILTERS: string[] = ["All", "Real Estate", "Fantasy", "Romance", "Biblical", "Human Resources", "Illustration", "True Crime", "Memoir"];
@@ -205,6 +205,7 @@ export const NAV_LINKS = [
     dropdown: [
       {
         items: [
+          { label: "Overview & Mission", href: "/about" },
           { label: "Our Story", href: "/about/our-story" },
           { label: "Our Team", href: "/about/our-team" },
           { label: "Why Choose Us", href: "/about/why-choose-us" },

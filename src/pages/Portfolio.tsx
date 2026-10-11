@@ -73,6 +73,12 @@ export const Portfolio: React.FC = () => {
                       src={book.img}
                       alt={book.title}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-104 transition-transform duration-350"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.src.includes("unsplash")) {
+                          target.src = "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400";
+                        }
+                      }}
                     />
                     {/* Shadow overlay */}
                     <div className="absolute inset-0 bg-navy/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4">

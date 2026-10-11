@@ -61,8 +61,18 @@ export const HeaderNav: React.FC = () => {
         setActiveDropdown(null);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveDropdown(null);
+        setMobileMenuOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   // Close menus on page transitions
@@ -94,34 +104,35 @@ export const HeaderNav: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Links */}
+          {/* Desktop Links (Click-to-open, NO hover) */}
           <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => (
               <div
                 key={link.label}
                 className="relative"
-                onMouseEnter={() => link.dropdown && setActiveDropdown(link.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
               >
                 {link.dropdown ? (
                   <button
-                    className={`flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
+                    type="button"
+                    onClick={() => setActiveDropdown(activeDropdown === link.label ? null : link.label)}
+                    aria-expanded={activeDropdown === link.label}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-md transition-all cursor-pointer select-none ${
                       activeDropdown === link.label
-                        ? "text-gold"
-                        : "text-gray-700 hover:text-gold"
+                        ? "text-gold bg-amber-50/80 font-bold"
+                        : "text-gray-700 hover:text-gold hover:bg-gray-50"
                     }`}
                   >
                     {link.label}
                     <ChevronDown
                       className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                        activeDropdown === link.label ? "rotate-180 text-gold" : ""
+                        activeDropdown === link.label ? "rotate-180 text-gold" : "text-gray-500"
                       }`}
                     />
                   </button>
                 ) : (
                   <Link
                     href={link.href || "/"}
-                    className="flex items-center px-3 py-2 text-sm font-semibold text-gray-700 hover:text-gold rounded-md transition-colors"
+                    className="flex items-center px-3.5 py-2 text-sm font-semibold text-gray-700 hover:text-gold hover:bg-gray-50 rounded-md transition-all"
                   >
                     {link.label}
                   </Link>

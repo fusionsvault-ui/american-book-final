@@ -13,6 +13,9 @@ const PORT = 3000; // Strict requirement by infrastructure
 
 const UPSTREAM_URL = "https://american-book-founderszip--devwork65.replit.app";
 
+// Serve public assets directly with proper cache headers
+app.use(express.static(path.join(process.cwd(), "public")));
+
 // Redirect/Proxy missing static assets to the upstream Replit site to ensure all images load perfectly
 app.use((req, res, next) => {
   const ext = path.extname(req.path).toLowerCase();
