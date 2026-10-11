@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Mail, Phone, Clock, MapPin, Send, CheckCircle2, Star } from "lucide-react";
 
 export const Contact: React.FC = () => {
@@ -41,6 +42,13 @@ export const Contact: React.FC = () => {
       title={cms.seo_contact_title || "Contact Our Senior Publishing Advisors"}
       description={cms.seo_contact_desc || "Connect directly with Beyond Book Publishing (BeyondBookpublishing.com) consultants. Schedule a free 30-minute phone strategy call to estimate pricing fees & publish your book."}
     >
+      {/* Breadcrumb Strip */}
+      <div className="bg-cream/80 border-b border-gray-150 py-3">
+        <div className="container mx-auto px-4 md:px-6">
+          <Breadcrumbs items={[{ label: "Contact Us" }]} />
+        </div>
+      </div>
+
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="contact-banner">
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:20px_20px]" />

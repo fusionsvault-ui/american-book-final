@@ -4,6 +4,7 @@ import { Footer } from "./Footer";
 import { FloatingCTA } from "./FloatingCTA";
 import { ChatAssistant } from "./ChatAssistant";
 import { WavingFlag } from "./WavingFlag";
+import { ScrollToTop } from "./ScrollToTop";
 import { Star } from "lucide-react";
 
 interface LayoutProps {
@@ -48,8 +49,29 @@ export const Layout: React.FC<LayoutProps> = ({
     }
   }, [title, description]);
 
+  // Global capture listener to ensure ANY link click resets scroll position to the top
+  useEffect(() => {
+    const handleGlobalLinkClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (anchor) {
+        const href = anchor.getAttribute("href");
+        if (href && (href.startsWith("/") || href === "#" || href.startsWith("#"))) {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }
+      }
+    };
+
+    document.addEventListener("click", handleGlobalLinkClick, true);
+    return () => {
+      document.removeEventListener("click", handleGlobalLinkClick, true);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-navy flex flex-col font-sans" id="layout-root">
+      <ScrollToTop />
       {/* Top Review/Trust Banner */}
       <div
         className="bg-[#121212] text-white py-2.5 px-3 w-full flex items-center justify-center gap-2 md:gap-3 text-xs md:text-sm font-medium"

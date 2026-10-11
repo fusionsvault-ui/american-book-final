@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { ShieldCheck, FileText, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const Policy: React.FC = () => {
@@ -21,6 +22,19 @@ export const Policy: React.FC = () => {
       title={activeTab === "privacy" ? "Privacy Policy" : "Terms of Service & Author Rights Guarantee"}
       description="Read Beyond Book Publishing's official Privacy Policy and Terms of Service. Discover our ironclad 100% royalty guarantee, copyright protection, and NDA security."
     >
+      {/* Breadcrumb Strip */}
+      <div className="bg-cream/80 border-b border-gray-150 py-3">
+        <div className="container mx-auto px-4 md:px-6">
+          <Breadcrumbs
+            items={[
+              {
+                label: activeTab === "privacy" ? "Privacy Policy" : "Terms of Service",
+              },
+            ]}
+          />
+        </div>
+      </div>
+
       {/* Header Banner */}
       <section className="bg-navy text-white py-16 relative overflow-hidden" id="policy-hero">
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:20px_20px]" />

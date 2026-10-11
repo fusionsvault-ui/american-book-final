@@ -7,7 +7,7 @@ import { QuoteModal } from "../components/QuoteModal";
 import { BookCarousel } from "../components/BookCarousel";
 import { GenreSection } from "../components/GenreSection";
 import { SERVICES } from "../data/servicesData";
-import { TESTIMONIALS } from "../data/websiteData";
+import { TESTIMONIALS, BLOG_POSTS } from "../data/websiteData";
 
 import { 
   Phone, 
@@ -23,7 +23,8 @@ import {
   ShieldAlert,
   ArrowRight,
   Sparkles,
-  Award
+  Award,
+  Clock
 } from "lucide-react";
 
 // Stat model
@@ -788,6 +789,88 @@ export const Home: React.FC = () => {
               </div>
             </motion.div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ================= BLOG RESOURCE GUIDES & LATEST INSIGHTS ================= */}
+      <section className="py-20 bg-cream/70 border-t border-b border-gray-150" id="home-blog-section">
+        <div className="container mx-auto px-4 md:px-6 max-w-6xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div className="space-y-2">
+              <span className="text-gold font-bold uppercase tracking-widest text-xs">
+                Author Education &amp; Strategic Insights
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif font-black text-navy leading-tight">
+                Latest Publishing Guides
+              </h2>
+              <p className="text-gray-600 text-sm md:text-base max-w-xl font-normal leading-relaxed">
+                Expert roadmaps covering ghostwriting standards, cover design conversion, and dual-channel global distribution.
+              </p>
+            </div>
+            <div>
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 bg-navy hover:bg-gold text-white hover:text-navy font-bold text-xs md:text-sm px-5 py-2.5 rounded-lg transition-colors shadow-xs"
+              >
+                <span>Browse All 10 Guides</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {BLOG_POSTS.slice(0, 3).map((post, pIdx) => (
+              <article
+                key={pIdx}
+                className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+              >
+                <Link href={`/blog/${post.slug}`} className="block">
+                  <div className="aspect-video relative overflow-hidden bg-navy">
+                    <img
+                      src={post.img}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-gold text-navy text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-xs">
+                      {post.category}
+                    </span>
+                  </div>
+                </Link>
+
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <div className="text-[11px] text-gray-400 font-semibold flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-gold" />
+                      <span>{post.readTime}</span>
+                    </div>
+
+                    <h3 className="font-serif font-bold text-navy text-lg group-hover:text-gold transition-colors line-clamp-2 leading-snug">
+                      <Link href={`/blog/${post.slug}`}>
+                        {post.title}
+                      </Link>
+                    </h3>
+
+                    <p className="text-gray-600 text-xs md:text-sm font-normal line-clamp-3 leading-relaxed">
+                      {post.excerpt}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-500">
+                      {post.author}
+                    </span>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="text-xs font-bold text-navy hover:text-gold inline-flex items-center gap-1 transition-colors"
+                    >
+                      <span>Read Guide</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-gold" />
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>

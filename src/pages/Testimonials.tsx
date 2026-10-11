@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { QuoteModal } from "../components/QuoteModal";
 import { TESTIMONIALS, FEATURED_AUTHORS } from "../data/websiteData";
 import { Star, Flame, Quote, UserCheck } from "lucide-react";
@@ -39,6 +40,13 @@ export const Testimonials: React.FC = () => {
       title={cms.seo_testimonials_title || "Verified Author Reviews & Testimonials"}
       description={cms.seo_testimonials_desc || "Read verified testimonials and satisfaction reviews from published authors. See how Beyond Book Publishing (BeyondBookpublishing.com) helped them find success."}
     >
+      {/* Breadcrumb Strip */}
+      <div className="bg-cream/80 border-b border-gray-150 py-3">
+        <div className="container mx-auto px-4 md:px-6">
+          <Breadcrumbs items={[{ label: "Testimonials" }]} />
+        </div>
+      </div>
+
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="testimonials-banner">
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:20px_20px]" />

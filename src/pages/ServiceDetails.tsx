@@ -3,6 +3,7 @@ import { Link, useRoute } from "wouter";
 import { Layout } from "../components/Layout";
 import { QuoteModal } from "../components/QuoteModal";
 import { BookCarousel } from "../components/BookCarousel";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { SERVICES, ServiceItem } from "../data/servicesData";
 import { motion } from "motion/react";
 import { 
@@ -178,11 +179,50 @@ export const ServiceDetails: React.FC = () => {
   const [match, params] = useRoute("/services/:slug");
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Parse target service from catalog
+  // Parse target service from catalog with robust slug normalization & aliases
   const service = useMemo(() => {
     if (!match || !params) return null;
     const { slug } = params as { slug: string };
-    return SERVICES.find((s) => s.slug === slug) || null;
+    
+    // 1. Direct match
+    const direct = SERVICES.find((s) => s.slug === slug);
+    if (direct) return direct;
+
+    // 2. Normalize and check aliases
+    const normalized = slug.toLowerCase().replace(/[-_\s]/g, "");
+    const aliasMap: Record<string, string> = {
+      ghostwriting: "ghost-writing",
+      editing: "copy-editing",
+      copyediting: "copy-editing",
+      bookediting: "copy-editing",
+      publishing: "self-publishing",
+      bookpublishing: "self-publishing",
+      coverdesign: "book-cover-design",
+      bookcoverdesign: "book-cover-design",
+      marketing: "social-media-marketing",
+      bookmarketing: "social-media-marketing",
+      audiobook: "audiobook-production",
+      audiobooks: "audiobook-production",
+      ebook: "ebook-publishing",
+      printondemand: "print-on-demand",
+      authorwebsite: "author-website",
+      booktrailer: "book-trailer",
+      biography: "biography-writing",
+      memoir: "memoir-writing",
+      childrensbook: "childrens-book-writing",
+      childrensbooks: "childrens-book-writing",
+    };
+
+    const targetSlug = aliasMap[normalized];
+    if (targetSlug) {
+      const aliasMatch = SERVICES.find((s) => s.slug === targetSlug);
+      if (aliasMatch) return aliasMatch;
+    }
+
+    // 3. Normalized slug comparison
+    return (
+      SERVICES.find((s) => s.slug.replace(/-/g, "") === normalized) || null
+    );
   }, [match, params]);
 
   // Derived related services
@@ -234,6 +274,16 @@ export const ServiceDetails: React.FC = () => {
           />
         </div>
         <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <div className="mb-4">
+            <Breadcrumbs
+              light
+              items={[
+                { label: "Services", href: "/services" },
+                { label: service.title },
+              ]}
+            />
+          </div>
+
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}

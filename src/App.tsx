@@ -8,15 +8,18 @@ import { ServiceDetails } from "./pages/ServiceDetails";
 import { Portfolio } from "./pages/Portfolio";
 import { Pricing } from "./pages/Pricing";
 import { Blog } from "./pages/Blog";
+import { BlogPost } from "./pages/BlogPost";
 import { Contact } from "./pages/Contact";
 import { Testimonials } from "./pages/Testimonials";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { Policy } from "./pages/Policy";
 import { NotFound } from "./pages/NotFound";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 export default function App() {
   return (
     <CMSProvider>
+      <ScrollToTop />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/about" component={About} />
@@ -30,7 +33,7 @@ export default function App() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/pricing/:category" component={Pricing} />
         <Route path="/blog" component={Blog} />
-        <Route path="/blog/:slug" component={Blog} />
+        <Route path="/blog/:slug" component={BlogPost} />
         <Route path="/contact" component={Contact} />
         <Route path="/testimonials" component={Testimonials} />
         <Route path="/privacy-policy" component={Policy} />

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { QuoteModal } from "../components/QuoteModal";
 import { PRICING_PACKAGES, PRICING_CATEGORIES } from "../data/websiteData";
 import { Calculator, Star, Check, Sparkles, ChevronRight } from "lucide-react";
@@ -78,6 +79,13 @@ export const Pricing: React.FC = () => {
       title={cms.seo_pricing_title || "Modular Packages & Interactive Project Estimator"}
       description={cms.seo_pricing_desc || "View our transparent pricing tiers for writing, developmental editing, and global formatting distribution. Try our Interactive Calculator to estimate flat package fees."}
     >
+      {/* Breadcrumb Strip */}
+      <div className="bg-cream/80 border-b border-gray-150 py-3">
+        <div className="container mx-auto px-4 md:px-6">
+          <Breadcrumbs items={[{ label: "Pricing & Packages" }]} />
+        </div>
+      </div>
+
       {/* Search Header Banner */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="pricing-banner">
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:20px_20px]" />

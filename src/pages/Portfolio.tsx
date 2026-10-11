@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { QuoteModal } from "../components/QuoteModal";
 import { PORTFOLIO_BOOKS, PORTFOLIO_FILTERS } from "../data/websiteData";
 import { Star, Eye } from "lucide-react";
@@ -22,6 +23,13 @@ export const Portfolio: React.FC = () => {
       title={cms.seo_portfolio_title || "Our Published Books Showcase Gallery"}
       description={cms.seo_portfolio_desc || "Browse dozens of beautiful novels, memoirs, business guides, children books, and thrillers designed and published by Beyond Book Publishing (BeyondBookpublishing.com)."}
     >
+      {/* Breadcrumb Strip */}
+      <div className="bg-cream/80 border-b border-gray-150 py-3">
+        <div className="container mx-auto px-4 md:px-6">
+          <Breadcrumbs items={[{ label: "Portfolio" }]} />
+        </div>
+      </div>
+
       {/* Intro Header */}
       <section className="bg-navy text-white py-16 text-center relative overflow-hidden" id="portfolio-banner">
         <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#f5c518_1px,transparent_1px)] [background-size:20px_20px]" />

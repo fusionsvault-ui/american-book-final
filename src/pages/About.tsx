@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "wouter";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { QuoteModal } from "../components/QuoteModal";
 import { TEAM_MEMBERS, WHY_CHOOSE_US_STATS } from "../data/websiteData";
 import { 
@@ -115,11 +116,9 @@ export const About: React.FC = () => {
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center max-w-4xl">
           {/* Breadcrumb navigation */}
-          <nav className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold mb-6">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span className="text-gray-500">/</span>
-            <span className="text-white">About Us</span>
-          </nav>
+          <div className="flex justify-center mb-6">
+            <Breadcrumbs light items={[{ label: "About Us" }]} />
+          </div>
 
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-gold/30 text-gold text-xs font-bold uppercase tracking-wider mb-5">
             <Sparkles className="w-3.5 h-3.5" />
