@@ -72,7 +72,7 @@ export const Testimonials: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {TESTIMONIALS.map((t, idx) => (
+            {(cms.testimonials && cms.testimonials.length > 0 ? cms.testimonials : TESTIMONIALS).map((t, idx) => (
               <div
                 key={idx}
                 className="bg-white rounded-xl p-8 border border-gray-150 shadow-md relative hover:-translate-y-1 transition-all flex flex-col justify-between"

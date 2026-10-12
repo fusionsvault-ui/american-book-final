@@ -3,6 +3,7 @@ import { useRoute, Link } from "wouter";
 import { Layout } from "../components/Layout";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { ArticleRenderer, slugifyHeading } from "../components/ArticleRenderer";
+import { useCMS } from "../components/CMSContext";
 import { BLOG_POSTS } from "../data/websiteData";
 import { BlogPostItem } from "../types";
 import { QuoteModal } from "../components/QuoteModal";
@@ -25,6 +26,9 @@ import {
 } from "lucide-react";
 
 export const BlogPost: React.FC = () => {
+  const { data: cms } = useCMS();
+  const allPosts = cms.blogs && cms.blogs.length > 0 ? cms.blogs : BLOG_POSTS;
+
   const [match, params] = useRoute<{ slug: string }>("/blog/:slug");
   const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -33,8 +37,8 @@ export const BlogPost: React.FC = () => {
 
   const post: BlogPostItem | undefined = useMemo(() => {
     if (!slug) return undefined;
-    return BLOG_POSTS.find((p) => p.slug === slug);
-  }, [slug]);
+    return allPosts.find((p) => p.slug === slug);
+  }, [slug, allPosts]);
 
   // Extract H2 headings for Table of Contents
   const headings = useMemo(() => {
@@ -54,13 +58,13 @@ export const BlogPost: React.FC = () => {
   // Related posts (same category or next posts, excluding current)
   const relatedPosts = useMemo(() => {
     if (!post) return [];
-    const sameCat = BLOG_POSTS.filter(
+    const sameCat = allPosts.filter(
       (p) => p.slug !== post.slug && p.category === post.category
     );
     if (sameCat.length >= 2) return sameCat.slice(0, 3);
-    const others = BLOG_POSTS.filter((p) => p.slug !== post.slug);
+    const others = allPosts.filter((p) => p.slug !== post.slug);
     return others.slice(0, 3);
-  }, [post]);
+  }, [post, allPosts]);
 
   const handleCopyLink = () => {
     const url = window.location.href;
@@ -74,7 +78,7 @@ export const BlogPost: React.FC = () => {
   if (!post) {
     return (
       <Layout
-        title="Guide Not Found – Beyond Book Publishing"
+        title="Guide Not Found - Beyond Book Publishing"
         description="The requested publishing guide could not be located. Explore our 10 comprehensive author resource guides."
       >
         <div className="bg-cream min-h-[60vh] py-20">
@@ -134,13 +138,10 @@ export const BlogPost: React.FC = () => {
 
   return (
     <Layout
-      title={`${post.title} – Beyond Book Publishing`}
-      description={post.excerpt}
+      title={post.metaTitle || `${post.title} - Beyond Book Publishing`}
+      description={post.metaDesc || post.excerpt}
+      schemaMarkup={post.schemaMarkup || JSON.stringify(articleSchema)}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
 
       <QuoteModal
         open={quoteModalOpen}

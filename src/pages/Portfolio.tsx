@@ -11,12 +11,14 @@ export const Portfolio: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
+  const allBooks = cms.portfolioBooks && cms.portfolioBooks.length > 0 ? cms.portfolioBooks : PORTFOLIO_BOOKS;
+
   const filteredBooks = useMemo(() => {
-    if (selectedFilter === "All") return PORTFOLIO_BOOKS;
-    return PORTFOLIO_BOOKS.filter(
+    if (selectedFilter === "All") return allBooks;
+    return allBooks.filter(
       (b) => b.genre.toLowerCase() === selectedFilter.toLowerCase()
     );
-  }, [selectedFilter]);
+  }, [selectedFilter, allBooks]);
 
   return (
     <Layout

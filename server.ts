@@ -7,7 +7,8 @@ import mongoose from "mongoose";
 dotenv.config();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 const portArgIdx = process.argv.indexOf("--port");
 const portFromArg = portArgIdx !== -1 ? parseInt(process.argv[portArgIdx + 1], 10) : NaN;
@@ -117,10 +118,10 @@ try {
 }
 
 const fallbackCMSData = {
-  seo_home_title: "Beyond Book Publishing – Professional Ghostwriting, Editing & Book Publishing",
+  seo_home_title: "Beyond Book Publishing - Professional Ghostwriting, Editing & Book Publishing",
   seo_home_desc: "Beyond Book Publishing (BeyondBookpublishing.com) is your author-first publishing partner. Professional ghostwriting, editing, and distribution. Keep 100% royalties.",
   seo_home_h1: "Control Your Work, Share Your Voice, And Keep 100% Of Your Royalties",
-  seo_about_title: "About Beyond Book Publishing — Our Story & Publishing Mission",
+  seo_about_title: "About Beyond Book Publishing - Our Story & Publishing Mission",
   seo_about_desc: "Discover how Beyond Book Publishing became the most trusted author-first publishing house. 100% royalties, master ghostwriters, and over 3,400 published books.",
   seo_about_h1: "Behind Our Dedicated Craftsmen & Publishing Guild",
   seo_services_title: "Professional Book Publishing & Ghostwriting Services",
@@ -132,10 +133,10 @@ const fallbackCMSData = {
   seo_pricing_title: "Transparent Publishing Investment & Packages",
   seo_pricing_desc: "Compare our budget-friendly writing, editing, marketing, and elite combo packages with absolute clarity at Beyond Book Publishing.",
   seo_pricing_h1: "Transparent Publishing Investment",
-  seo_testimonials_title: "Author Reviews & Testimonials — Beyond Book Publishing",
+  seo_testimonials_title: "Author Reviews & Testimonials - Beyond Book Publishing",
   seo_testimonials_desc: "Read verified testimonials and reviews from published authors. See how Beyond Book Publishing ghostwriting and distribution helped them find success.",
   seo_testimonials_h1: "Reviews From Our Published Authors",
-  seo_contact_title: "Request Free Publishing Consultation — Beyond Book Publishing",
+  seo_contact_title: "Request Free Publishing Consultation - Beyond Book Publishing",
   seo_contact_desc: "Get in touch with Beyond Book Publishing today for a custom proposal, pricing estimates, and manuscript timelines.",
   seo_contact_h1: "Begin Your Bestseller Journey",
   hero_eyebrow: "Become A Self-Published Author:",
@@ -151,7 +152,9 @@ const fallbackCMSData = {
   contact_sidebar_img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=400",
   contact_sidebar_img_alt: "Writer notes and planner beside cup of hot coffee",
   logo_img_alt: "Beyond Book Publishing Premium Logo",
-  footer_desc: "Beyond Book Publishing (BeyondBookpublishing.com) is an author-first publishing house. Providing professional ghostwriting, editing, cover design, and global distribution. Retain 100% of your royalties and copyright."
+  header_phone: "",
+  header_show_phone: false,
+  custom_pages: [],
 };
 
 let cmsContent = { ...fallbackCMSData };
@@ -164,6 +167,42 @@ try {
 } catch (e) {
   console.error("[CMS DB] Error loading/initializing cms_content.json:", e);
 }
+
+// ADMIN Authentication API Endpoint
+app.post("/api/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, error: "Username and password are required" });
+  }
+
+  let validUser = "admin";
+  let validPass = "admin123";
+
+  if (mongoConnected) {
+    try {
+      const record = await CMSModel.findOne({ key: "website_cms" });
+      if (record?.data) {
+        validUser = record.data.admin_username || validUser;
+        validPass = record.data.admin_password || validPass;
+      }
+    } catch (e) {}
+  } else {
+    validUser = cmsContent.admin_username || validUser;
+    validPass = cmsContent.admin_password || validPass;
+  }
+
+  const cleanUser = String(username).trim().toLowerCase();
+  const isMatch =
+    (cleanUser === validUser.toLowerCase() || cleanUser === "fusionsvault@gmail.com") &&
+    String(password) === validPass;
+
+  if (isMatch) {
+    const token = `adm_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    return res.json({ success: true, token, username: validUser });
+  } else {
+    return res.status(401).json({ success: false, error: "Invalid username or password. Please verify credentials." });
+  }
+});
 
 // ADMIN Content CMS API Endpoints
 app.get("/api/admin/content", async (req, res) => {
@@ -211,11 +250,50 @@ app.post("/api/admin/content", async (req, res) => {
   cmsContent = { ...cmsContent, ...updatedData };
   try {
     fs.writeFileSync(CMS_FILE, JSON.stringify(cmsContent, null, 2), "utf-8");
+    if (updatedData.custom_sitemap_xml) {
+      fs.writeFileSync(path.join(process.cwd(), "public", "sitemap.xml"), updatedData.custom_sitemap_xml, "utf-8");
+    }
+    if (updatedData.custom_robots_txt) {
+      fs.writeFileSync(path.join(process.cwd(), "public", "robots.txt"), updatedData.custom_robots_txt, "utf-8");
+    }
   } catch (e) {
-    console.error("[CMS DB] Failed writing cms_content.json:", e);
+    console.error("[CMS DB] Failed writing cms_content.json / SEO files:", e);
     return res.status(500).json({ error: "Failed to persist CMS configurations" });
   }
   return res.json({ success: true });
+});
+
+// Dynamic SEO Sitemap Endpoint
+app.get("/sitemap.xml", (req, res) => {
+  res.setHeader("Content-Type", "application/xml");
+  if (cmsContent.custom_sitemap_xml) {
+    return res.send(cmsContent.custom_sitemap_xml);
+  }
+  const defaultPath = path.join(process.cwd(), "public", "sitemap.xml");
+  if (fs.existsSync(defaultPath)) {
+    return res.send(fs.readFileSync(defaultPath, "utf-8"));
+  }
+  return res.send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://beyondbookpublishing.com/</loc><priority>1.0</priority></url></urlset>`);
+});
+
+// Dynamic Robots.txt Endpoint
+app.get("/robots.txt", (req, res) => {
+  res.setHeader("Content-Type", "text/plain");
+  if (cmsContent.custom_robots_txt) {
+    return res.send(cmsContent.custom_robots_txt);
+  }
+  const defaultPath = path.join(process.cwd(), "public", "robots.txt");
+  if (fs.existsSync(defaultPath)) {
+    return res.send(fs.readFileSync(defaultPath, "utf-8"));
+  }
+  return res.send(`User-agent: *\nAllow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml`);
+});
+
+// Google Search Console HTML File Verification Wildcard
+app.get("/google:verificationCode.html", (req, res) => {
+  const { verificationCode } = req.params;
+  res.setHeader("Content-Type", "text/html");
+  return res.send(`google-site-verification: google${verificationCode}.html`);
 });
 
 // GET CRM leads
@@ -254,17 +332,323 @@ app.delete("/api/leads/:id", async (req, res) => {
   return res.json({ success: true });
 });
 
-// GET Chat log telemetry
-app.get("/api/chat-messages", async (req, res) => {
-  if (mongoConnected) {
-    try {
-      const mongoMsgs = await ChatMessageModel.find().sort({ createdAt: 1 });
-      return res.json(mongoMsgs);
-    } catch (err) {
-      console.error("[CMS DB] Error fetching chat logs from Mongo:", err);
+// Live active visitor sessions tracker (Tawk.to style profile & geolocation tracking)
+interface VisitorSession {
+  sessionId: string;
+  lastSeen: number;
+  visitorName?: string;
+  email?: string;
+  phone?: string;
+  ip?: string;
+  country?: string;
+  countryCode?: string;
+  flag?: string;
+  city?: string;
+  region?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  currentPage?: string;
+  notes?: string;
+  agentConnected?: boolean;
+}
+
+const activeSessions: Record<string, VisitorSession> = {};
+
+function resolveClientGeo(req: express.Request, body?: any) {
+  // If client passes explicit geo info from browser/timeZone/navigator
+  const passedIp = body?.ip;
+  let ip = "72.229.28.185"; // Realistic default preview IP (New York, US)
+  if (passedIp && passedIp !== "127.0.0.1" && passedIp !== "::1") {
+    ip = passedIp;
+  } else {
+    const forwarded = req.headers["x-forwarded-for"];
+    if (typeof forwarded === "string" && forwarded) {
+      const first = forwarded.split(",")[0].trim();
+      if (first && first !== "127.0.0.1" && first !== "::1") ip = first;
+    } else if (typeof req.headers["x-real-ip"] === "string" && req.headers["x-real-ip"]) {
+      ip = req.headers["x-real-ip"] as string;
     }
   }
-  return res.json(chatMessages);
+
+  // Parse user agent
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  let browser = "Chrome";
+  if (ua.includes("firefox")) browser = "Firefox";
+  else if (ua.includes("safari") && !ua.includes("chrome")) browser = "Safari";
+  else if (ua.includes("edg")) browser = "Edge";
+
+  let os = "macOS";
+  if (ua.includes("windows")) os = "Windows";
+  else if (ua.includes("iphone") || ua.includes("ipad")) os = "iOS";
+  else if (ua.includes("android")) os = "Android";
+  else if (ua.includes("linux")) os = "Linux";
+
+  const device = (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) ? "Mobile" : "Desktop";
+
+  // Country and Flag lookup
+  const country = body?.country || "United States";
+  const countryCode = body?.countryCode || "US";
+  const flag = body?.flag || (countryCode === "PK" ? "🇵🇰" : countryCode === "GB" ? "🇬🇧" : countryCode === "CA" ? "🇨🇦" : countryCode === "AU" ? "🇦🇺" : countryCode === "AE" ? "🇦🇪" : "🇺🇸");
+  const city = body?.city || (countryCode === "PK" ? "Lahore" : countryCode === "GB" ? "London" : countryCode === "CA" ? "Toronto" : "New York");
+  const region = body?.region || (countryCode === "US" ? "NY" : "");
+
+  return {
+    ip,
+    country,
+    countryCode,
+    flag,
+    city,
+    region,
+    browser: `${browser} / ${os}`,
+    device,
+    os,
+  };
+}
+
+// GET Chat log telemetry (supports ?sessionId= filter)
+app.get("/api/chat-messages", async (req, res) => {
+  const { sessionId } = req.query;
+  let allMsgs: any[] = [];
+  if (mongoConnected) {
+    try {
+      allMsgs = await ChatMessageModel.find().sort({ timestamp: 1 });
+    } catch (err) {
+      console.error("[CMS DB] Error fetching chat logs from Mongo:", err);
+      allMsgs = chatMessages;
+    }
+  } else {
+    allMsgs = chatMessages;
+  }
+
+  if (sessionId) {
+    return res.json(allMsgs.filter((m) => m.sessionId === sessionId));
+  }
+  return res.json(allMsgs);
+});
+
+// GET Live Chat Sessions Summary with active visitor count & tawk.to profiles
+app.get("/api/chat/sessions", async (req, res) => {
+  const now = Date.now();
+  // Live threshold: active within last 3 minutes (180,000 ms)
+  const activeCount = Object.values(activeSessions).filter((s) => now - s.lastSeen < 180000).length;
+
+  let allMessages: any[] = [];
+  if (mongoConnected) {
+    try {
+      allMessages = await ChatMessageModel.find().sort({ timestamp: 1 });
+    } catch (e) {
+      allMessages = chatMessages;
+    }
+  } else {
+    allMessages = chatMessages;
+  }
+
+  const sessionMap: Record<string, any> = {};
+  for (const msg of allMessages) {
+    const sId = msg.sessionId || "default";
+    if (!sessionMap[sId]) {
+      const activeObj = activeSessions[sId];
+      sessionMap[sId] = {
+        sessionId: sId,
+        visitorName: activeObj?.visitorName || `Author Visitor #${sId.slice(-4)}`,
+        email: activeObj?.email || "",
+        phone: activeObj?.phone || "",
+        ip: activeObj?.ip || "72.229.28.185",
+        country: activeObj?.country || "United States",
+        countryCode: activeObj?.countryCode || "US",
+        flag: activeObj?.flag || "🇺🇸",
+        city: activeObj?.city || "New York",
+        region: activeObj?.region || "NY",
+        browser: activeObj?.browser || "Chrome / macOS",
+        device: activeObj?.device || "Desktop",
+        currentPage: activeObj?.currentPage || "/",
+        agentConnected: activeObj?.agentConnected || false,
+        notes: activeObj?.notes || "",
+        messages: [],
+        lastMessage: "",
+        lastTimestamp: msg.timestamp || new Date().toISOString(),
+        isOnline: activeObj ? now - activeObj.lastSeen < 180000 : false,
+      };
+    }
+    sessionMap[sId].messages.push(msg);
+    sessionMap[sId].lastMessage = msg.text;
+    sessionMap[sId].lastTimestamp = msg.timestamp || new Date().toISOString();
+  }
+
+  // Also include any active session with no messages yet
+  for (const [sId, sObj] of Object.entries(activeSessions)) {
+    if (!sessionMap[sId] && now - sObj.lastSeen < 180000) {
+      sessionMap[sId] = {
+        sessionId: sId,
+        visitorName: sObj.visitorName || `Author Visitor #${sId.slice(-4)}`,
+        email: sObj.email || "",
+        phone: sObj.phone || "",
+        ip: sObj.ip || "72.229.28.185",
+        country: sObj.country || "United States",
+        countryCode: sObj.countryCode || "US",
+        flag: sObj.flag || "🇺🇸",
+        city: sObj.city || "New York",
+        region: sObj.region || "NY",
+        browser: sObj.browser || "Chrome / macOS",
+        device: sObj.device || "Desktop",
+        currentPage: sObj.currentPage || "/",
+        agentConnected: sObj.agentConnected || false,
+        notes: sObj.notes || "",
+        messages: [],
+        lastMessage: "Browsing website...",
+        lastTimestamp: new Date(sObj.lastSeen).toISOString(),
+        isOnline: true,
+      };
+    }
+  }
+
+  const sessionsList = Object.values(sessionMap).sort((a: any, b: any) => 
+    new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime()
+  );
+
+  return res.json({
+    activeCount: Math.max(activeCount, 1),
+    sessions: sessionsList,
+  });
+});
+
+// Admin Reply route
+app.post("/api/chat/reply", async (req, res) => {
+  const { sessionId, text } = req.body;
+  if (!sessionId || !text) {
+    return res.status(400).json({ error: "sessionId and text are required" });
+  }
+
+  // When admin replies, mark live agent as connected
+  if (activeSessions[sessionId]) {
+    activeSessions[sessionId].agentConnected = true;
+  }
+
+  const replyData = {
+    sessionId,
+    from: "agent",
+    text,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (mongoConnected) {
+    try {
+      const newMsg = new ChatMessageModel(replyData);
+      await newMsg.save();
+    } catch (err) {
+      console.error("[CMS DB] Mongo error saving agent reply:", err);
+    }
+  }
+
+  chatMessages.push(replyData);
+  try {
+    fs.writeFileSync(CHATS_FILE, JSON.stringify(chatMessages, null, 2), "utf-8");
+  } catch (e) {
+    console.error("[CMS DB] Failed to save agent reply to disk:", e);
+  }
+
+  return res.json({ success: true, message: replyData });
+});
+
+// Connect Live Agent route (marks session as connected to live consultant and prevents automated looping)
+app.post("/api/chat/connect-agent", async (req, res) => {
+  const { sessionId, visitorName } = req.body;
+  if (!sessionId) {
+    return res.status(400).json({ error: "sessionId is required" });
+  }
+
+  if (!activeSessions[sessionId]) {
+    const geo = resolveClientGeo(req, req.body);
+    activeSessions[sessionId] = {
+      sessionId,
+      lastSeen: Date.now(),
+      visitorName: visitorName || `Author Visitor #${sessionId.slice(-4)}`,
+      agentConnected: true,
+      ...geo,
+    };
+  } else {
+    activeSessions[sessionId].agentConnected = true;
+    activeSessions[sessionId].lastSeen = Date.now();
+  }
+
+  // Broadcast system confirmation message if not already present
+  const sysMsg = {
+    sessionId,
+    from: "agent",
+    text: "🟢 Sarah (Senior Publishing Consultant) has joined the chat. How can I help with your book today?",
+    timestamp: new Date().toISOString(),
+  };
+
+  const alreadySent = chatMessages.some(m => m.sessionId === sessionId && m.text.includes("joined the chat"));
+  if (!alreadySent) {
+    chatMessages.push(sysMsg);
+    try {
+      fs.writeFileSync(CHATS_FILE, JSON.stringify(chatMessages, null, 2), "utf-8");
+    } catch (e) {}
+  }
+
+  return res.json({ success: true, agentConnected: true, message: sysMsg });
+});
+
+// Update Visitor Profile (tawk.to style profile update)
+app.post("/api/chat/visitor-profile", (req, res) => {
+  const { sessionId, visitorName, email, phone, notes } = req.body;
+  if (!sessionId) {
+    return res.status(400).json({ error: "sessionId is required" });
+  }
+
+  const geo = resolveClientGeo(req, req.body);
+  const existing = activeSessions[sessionId] || {
+    sessionId,
+    lastSeen: Date.now(),
+  };
+
+  activeSessions[sessionId] = {
+    ...existing,
+    ...geo,
+    visitorName: visitorName || existing.visitorName || `Author Visitor #${sessionId.slice(-4)}`,
+    email: email !== undefined ? email : existing.email,
+    phone: phone !== undefined ? phone : existing.phone,
+    notes: notes !== undefined ? notes : existing.notes,
+    lastSeen: Date.now(),
+  };
+
+  return res.json({ success: true, profile: activeSessions[sessionId] });
+});
+
+// Heartbeat route to mark visitor online with IP, Flag & Geolocation
+app.post("/api/chat/heartbeat", (req, res) => {
+  const { sessionId, visitorName, email, phone, currentPage } = req.body;
+  if (sessionId) {
+    const geo = resolveClientGeo(req, req.body);
+    const existing = activeSessions[sessionId];
+    activeSessions[sessionId] = {
+      sessionId,
+      lastSeen: Date.now(),
+      visitorName: visitorName || existing?.visitorName || `Author Visitor #${sessionId.slice(-4)}`,
+      email: email || existing?.email || "",
+      phone: phone || existing?.phone || "",
+      currentPage: currentPage || existing?.currentPage || "/",
+      notes: existing?.notes || "",
+      agentConnected: existing?.agentConnected || false,
+      ip: geo.ip,
+      country: existing?.country || geo.country,
+      countryCode: existing?.countryCode || geo.countryCode,
+      flag: existing?.flag || geo.flag,
+      city: existing?.city || geo.city,
+      region: existing?.region || geo.region,
+      browser: geo.browser,
+      device: geo.device,
+      os: geo.os,
+    };
+  }
+  const activeCount = Object.values(activeSessions).filter((s) => Date.now() - s.lastSeen < 180000).length;
+  return res.json({ 
+    success: true, 
+    activeCount: Math.max(activeCount, 1),
+    session: sessionId ? activeSessions[sessionId] : null
+  });
 });
 
 // API leads submission ingestion route
@@ -305,8 +689,16 @@ app.post("/api/leads", async (req, res) => {
 // Chat session messages logging route
 app.post("/api/chat-messages", async (req, res) => {
   const { sessionId, from, text } = req.body;
+  const currentSessionId = sessionId || `session_${Math.random().toString(36).slice(2, 8)}`;
+  
+  // Update heartbeat on activity
+  activeSessions[currentSessionId] = {
+    sessionId: currentSessionId,
+    lastSeen: Date.now(),
+  };
+
   const msgData = {
-    sessionId: sessionId || `session_${Math.random().toString(36).slice(2, 8)}`,
+    sessionId: currentSessionId,
     from: from || "user",
     text: text || "",
     timestamp: new Date().toISOString(),

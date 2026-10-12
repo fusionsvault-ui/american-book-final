@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { ChevronDown, Menu, X, Phone, BookOpen } from "lucide-react";
 import { useCMS } from "./CMSContext";
@@ -81,6 +81,32 @@ export const HeaderNav: React.FC = () => {
     setActiveDropdown(null);
   }, [location]);
 
+  // Dynamic Navigation Links from CMS, strictly guaranteeing Home is first, then About Us, then others
+  const effectiveNavLinks = useMemo(() => {
+    let rawLinks = NAV_LINKS;
+    if (cms?.nav_links && cms.nav_links.length > 0) {
+      rawLinks = cms.nav_links.map((link) => {
+        const defaultMatch = NAV_LINKS.find(
+          (nl) => nl.label.trim().toLowerCase() === link.label.trim().toLowerCase()
+        );
+        return {
+          label: link.label,
+          href: link.href,
+          dropdown: defaultMatch?.dropdown,
+        };
+      });
+    }
+
+    // Explicitly guarantee Home is first, then About Us
+    const homeItem = rawLinks.find((l) => l.label.toLowerCase() === "home") || { label: "Home", href: "/" };
+    const aboutItem = rawLinks.find((l) => l.label.toLowerCase().includes("about")) || { label: "About Us", href: "/about" };
+    const otherItems = rawLinks.filter(
+      (l) => l.label.toLowerCase() !== "home" && !l.label.toLowerCase().includes("about")
+    );
+
+    return [homeItem, aboutItem, ...otherItems];
+  }, [cms?.nav_links]);
+
   return (
     <>
       <nav
@@ -90,23 +116,33 @@ export const HeaderNav: React.FC = () => {
       >
         <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
           {/* Logo Brand Tag */}
-          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-10 h-10 bg-navy rounded-lg flex items-center justify-center overflow-hidden shadow-sm group-hover:bg-gold transition-colors">
-              <BookOpen className="w-5 h-5 text-gold group-hover:text-navy transition-colors" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-serif font-black text-xl leading-tight text-navy tracking-tight group-hover:text-gold transition-colors">
-                Beyond Book
-              </span>
-              <span className="font-sans text-[10px] md:text-xs font-bold tracking-[0.2em] text-gold uppercase leading-none">
-                Publishing
-              </span>
-            </div>
+          <Link href="/" className="flex items-center gap-3 group flex-shrink-0 mr-4 xl:mr-8">
+            {cms.logo_image_url ? (
+              <img
+                src={cms.logo_image_url}
+                alt={cms.logo_img_alt || "Beyond Book Publishing"}
+                className="h-11 max-w-[220px] object-contain"
+              />
+            ) : (
+              <>
+                <div className="w-10 h-10 bg-navy rounded-lg flex items-center justify-center overflow-hidden shadow-sm group-hover:bg-gold transition-colors">
+                  <BookOpen className="w-5 h-5 text-gold group-hover:text-navy transition-colors" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-serif font-black text-xl leading-tight text-navy tracking-tight group-hover:text-gold transition-colors">
+                    {cms.logo_text || "Beyond Book"}
+                  </span>
+                  <span className="font-sans text-[10px] md:text-xs font-bold tracking-[0.2em] text-gold uppercase leading-none">
+                    {cms.logo_subtext || "Publishing"}
+                  </span>
+                </div>
+              </>
+            )}
           </Link>
 
           {/* Desktop Links (Click-to-open, NO hover) */}
-          <div className="hidden lg:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
+          <div className="hidden lg:flex items-center justify-center gap-1 xl:gap-2 flex-1 mx-2">
+            {effectiveNavLinks.map((link) => (
               <div
                 key={link.label}
                 className="relative"
@@ -149,19 +185,22 @@ export const HeaderNav: React.FC = () => {
           </div>
 
           {/* Right Cta Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
-            <a
-              href={`tel:${(cms.hero_phone || "+1 (800) 555-0199").replace(/\s/g, "")}`}
-              className="flex items-center gap-1.5 text-sm font-semibold text-navy hover:text-gold transition-colors"
-            >
-              <Phone className="w-4 h-4 text-gold" />
-              {cms.hero_phone || "+1 (800) 555-0199"}
-            </a>
+          <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+            {cms.header_show_phone === true && Boolean(cms.header_phone?.trim()) && (
+              <a
+                href={`tel:${cms.header_phone.replace(/\s/g, "")}`}
+                className="flex items-center gap-1.5 text-sm font-semibold text-navy hover:text-gold transition-colors"
+                id="header-phone-link"
+              >
+                <Phone className="w-4 h-4 text-gold" />
+                {cms.header_phone}
+              </a>
+            )}
             <button
               onClick={() => setModalOpen(true)}
-              className="bg-gold hover:bg-yellow-400 text-navy font-bold text-sm px-5 py-3 rounded-md shadow-[0_4px_14px_0_rgba(245,197,24,0.35)] hover:-translate-y-0.5 transition-all whitespace-nowrap cursor-pointer"
+              className="bg-gold hover:bg-yellow-400 text-navy font-bold text-sm px-5 py-2.5 rounded-md shadow-[0_2px_10px_0_rgba(245,197,24,0.3)] hover:-translate-y-0.5 transition-all whitespace-nowrap cursor-pointer"
             >
-              Contact With Our Expert
+              {cms.header_cta_text || "Contact With Our Expert"}
             </button>
           </div>
 
@@ -179,7 +218,7 @@ export const HeaderNav: React.FC = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-100 shadow-xl max-h-[80vh] overflow-y-auto animate-in slide-in-from-top-4 duration-200" id="mobile-menu-drawer">
             <div className="container mx-auto px-4 py-4 space-y-1">
-              {NAV_LINKS.map((link) => (
+              {effectiveNavLinks.map((link) => (
                 <div key={link.label}>
                   {link.dropdown ? (
                     <>
@@ -236,13 +275,16 @@ export const HeaderNav: React.FC = () => {
 
               {/* Call + Action Buttons on phone menu */}
               <div className="pt-3 border-t border-gray-100 space-y-2">
-                <a
-                  href="tel:+18005550199"
-                  className="flex items-center justify-center gap-2 w-full border-2 border-navy text-navy font-bold text-sm py-3 rounded-md hover:bg-navy/5 transition-colors"
-                >
-                  <Phone className="w-4 h-4 text-gold" />
-                  +1 (800) 555-0199
-                </a>
+                {cms.header_show_phone === true && Boolean(cms.header_phone?.trim()) && (
+                  <a
+                    href={`tel:${cms.header_phone.replace(/\s/g, "")}`}
+                    className="flex items-center justify-center gap-2 w-full border-2 border-navy text-navy font-bold text-sm py-3 rounded-md hover:bg-navy/5 transition-colors"
+                    id="mobile-header-phone-link"
+                  >
+                    <Phone className="w-4 h-4 text-gold" />
+                    {cms.header_phone}
+                  </a>
+                )}
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

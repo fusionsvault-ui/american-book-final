@@ -13,15 +13,16 @@ export const ServicesList: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const allServices = cms.services && cms.services.length > 0 ? cms.services : SERVICES;
 
   const categories = useMemo(() => {
     const list = new Set<string>();
-    SERVICES.forEach((s) => list.add(s.category));
+    allServices.forEach((s) => list.add(s.category));
     return ["All", ...Array.from(list)];
-  }, []);
+  }, [allServices]);
 
   const filteredServices = useMemo(() => {
-    return SERVICES.filter((s) => {
+    return allServices.filter((s) => {
       const matchSearch =
         s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -31,7 +32,7 @@ export const ServicesList: React.FC = () => {
 
       return matchSearch && matchCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, allServices]);
 
   return (
     <Layout

@@ -144,7 +144,7 @@ export const Home: React.FC = () => {
 
   return (
     <Layout
-      title={cms.seo_home_title || "Beyond Book Publishing – Professional Ghostwriting, Editing & Book Publishing"}
+      title={cms.seo_home_title || "Beyond Book Publishing - Professional Ghostwriting, Editing & Book Publishing"}
       description={cms.seo_home_desc || "Upgrade to premium book production with Beyond Book Publishing (BeyondBookpublishing.com). Capturing your voice across every genre. Keep 100% of your royalties and copyright."}
     >
       {/* Dynamic Consultation Quote Modal overlay */}
@@ -168,24 +168,24 @@ export const Home: React.FC = () => {
       >
         <div className="absolute inset-0 bg-navy/88 z-0" />
         
-        <div className="container mx-auto px-4 md:px-6 relative z-10 py-16 md:py-24">
-          <div className="grid lg:grid-cols-[1fr_420px] gap-10 xl:gap-16 items-start">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 py-5 sm:py-6 md:py-7 lg:py-8">
+          <div className="grid lg:grid-cols-[1fr_390px] gap-6 xl:gap-10 items-center">
             
             {/* Left Box Details */}
-            <div className="space-y-6 pt-2">
+            <div className="space-y-3 pt-0.5">
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-gold font-bold text-base md:text-lg tracking-wide"
+                className="text-gold font-bold text-xs sm:text-sm uppercase tracking-wider"
               >
                 {heroData.eyebrow}
               </motion.p>
               
               <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-4xl sm:text-5xl md:text-[3.4rem] xl:text-[3.8rem] font-serif font-black leading-[1.12] text-white tracking-tight"
+                transition={{ duration: 0.4 }}
+                className="text-xl sm:text-2xl md:text-[1.75rem] lg:text-[1.95rem] font-serif font-black leading-[1.22] text-white tracking-tight"
               >
                 {heroData.headline}
               </motion.h1>
@@ -194,50 +194,61 @@ export const Home: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-gray-300 text-base md:text-lg leading-relaxed max-w-xl"
+                className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-xl"
               >
                 {heroData.subText}
               </motion.p>
               
               {/* Bullets lists */}
-              <ul className="space-y-3 pt-1">
+              <ul className="space-y-1.5 pt-0.5">
                 {heroData.bullets.map((bullet, idx) => (
-                  <li key={idx} className="flex items-center gap-3 text-gray-200 text-sm md:text-base" id={`hero-bullet-${idx}`}>
-                    <span className="w-2.5 h-2.5 rounded-full bg-gold flex-shrink-0 shadow-lg" />
+                  <li key={idx} className="flex items-center gap-2 text-gray-200 text-xs sm:text-sm" id={`hero-bullet-${idx}`}>
+                    <span className="w-2 h-2 rounded-full bg-gold flex-shrink-0 shadow-md" />
                     <span>{bullet}</span>
                   </li>
                 ))}
               </ul>
               
-              {/* Call and Pricing CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                <a 
-                  href={`tel:${heroData.phone.replace(/\s/g, "")}`}
-                  className="inline-flex items-center justify-center gap-2 bg-navy border-2 border-gold text-white font-bold text-sm px-7 h-14 rounded-md hover:bg-gold hover:text-navy transition-colors shadow-lg active:scale-98 duration-100 cursor-pointer"
-                  id="hero-call-action"
-                >
-                  <Phone className="w-4 h-4" />
-                  {heroData.phone}
-                </a>
+              {/* Call and Quote CTAs */}
+              <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                {cms.header_show_phone === true && (cms.header_phone?.trim() || heroData.phone) ? (
+                  <a 
+                    href={`tel:${(cms.header_phone || heroData.phone).replace(/\s/g, "")}`}
+                    className="inline-flex items-center justify-center gap-2 bg-navy border-2 border-gold text-white font-bold text-xs sm:text-sm px-5 h-10 rounded-md hover:bg-gold hover:text-navy transition-colors shadow-lg active:scale-98 duration-100 cursor-pointer"
+                    id="hero-call-action"
+                  >
+                    <Phone className="w-4 h-4 text-gold" />
+                    <span>{cms.header_phone || heroData.phone}</span>
+                  </a>
+                ) : (
+                  <button 
+                    onClick={() => openConsultation("hero-consultation")}
+                    className="inline-flex items-center justify-center gap-2 bg-navy border-2 border-gold text-white font-bold text-xs sm:text-sm px-5 h-10 rounded-md hover:bg-gold hover:text-navy transition-colors shadow-lg active:scale-98 duration-100 cursor-pointer"
+                    id="hero-call-action"
+                  >
+                    <Sparkles className="w-4 h-4 text-gold" />
+                    <span>Schedule Free Strategy Call</span>
+                  </button>
+                )}
                 <Link 
                   href="/pricing"
-                  className="inline-flex items-center justify-center gap-2 bg-gold hover:bg-yellow-400 text-navy font-bold text-sm px-7 h-14 rounded-md transition-colors shadow-lg active:scale-98 duration-100 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 bg-gold hover:bg-yellow-400 text-navy font-bold text-xs sm:text-sm px-5 h-10 rounded-md transition-colors shadow-lg active:scale-98 duration-100 cursor-pointer"
                   id="hero-pricing-action"
                 >
                   <FileText className="w-4 h-4" />
-                  Request Pricing Info
+                  <span>Get a Free Quote</span>
                 </Link>
               </div>
               
               {/* Reviews & Stars rating bar */}
-              <div className="flex items-center flex-wrap gap-2 pt-2">
-                <span className="text-gray-400 text-sm font-medium">{heroData.ratingText}</span>
+              <div className="flex items-center flex-wrap gap-2 pt-1 text-xs sm:text-sm">
+                <span className="text-gray-400 font-medium">{heroData.ratingText}</span>
                 <div className="flex items-center gap-0.5">
                   {[...Array(5)].map((_, idx) => (
-                    <Star key={idx} className="w-4 h-4 fill-gold text-gold" />
+                    <Star key={idx} className="w-3.5 h-3.5 fill-gold text-gold" />
                   ))}
                 </div>
-                <span className="text-gray-400 text-sm font-medium">
+                <span className="text-gray-400 font-medium">
                   based on <strong className="text-white">{heroData.ratingCount}</strong> satisfied customers.
                 </span>
               </div>
@@ -248,9 +259,9 @@ export const Home: React.FC = () => {
               <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
                 
                 {/* Gold header tag banner */}
-                <div className="bg-gold px-7 py-5 flex items-center justify-between">
+                <div className="bg-gold px-6 py-4 flex items-center justify-between">
                   <div>
-                    <h2 className="text-navy font-serif font-black text-xl md:text-2xl leading-tight">
+                    <h2 className="text-navy font-serif font-black text-lg md:text-xl leading-tight">
                       Connect With Our Expert
                     </h2>
                     <p className="text-navy/85 text-xs font-semibold mt-0.5">
@@ -258,7 +269,7 @@ export const Home: React.FC = () => {
                     </p>
                   </div>
                   <div className="p-2 bg-navy/10 rounded-full">
-                    <Sparkles className="w-6 h-6 text-navy" />
+                    <Sparkles className="w-5 h-5 text-navy" />
                   </div>
                 </div>
 
@@ -275,14 +286,14 @@ export const Home: React.FC = () => {
                       </p>
                     </div>
                   ) : (
-                    <form onSubmit={handleHeroFormSubmit} className="space-y-4">
+                    <form onSubmit={handleHeroFormSubmit} className="space-y-3">
                       <input 
                         type="text" 
                         required
                         placeholder="Full Name"
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        className="w-full h-12 border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
+                        className="w-full h-11 border border-gray-200 rounded-md px-3.5 py-2 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
                       />
                       <input 
                         type="email" 
@@ -290,31 +301,31 @@ export const Home: React.FC = () => {
                         placeholder="Email Address"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className="w-full h-12 border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
+                        className="w-full h-11 border border-gray-200 rounded-md px-3.5 py-2 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
                       />
                       <input 
                         type="tel" 
                         placeholder="Phone Number"
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className="w-full h-12 border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
+                        className="w-full h-11 border border-gray-200 rounded-md px-3.5 py-2 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium"
                       />
                       <textarea 
-                        rows={3}
+                        rows={2}
                         placeholder="Tell us about your book project (genre, word count, ideas)..."
                         value={form.message}
                         onChange={(e) => setForm({ ...form, message: e.target.value })}
-                        className="w-full border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium resize-none"
+                        className="w-full border border-gray-200 rounded-md px-3.5 py-2 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-medium resize-none"
                       />
                       <button 
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-navy hover:bg-navy/90 text-white font-extrabold h-14 rounded-md text-sm tracking-widest uppercase transition-all flex items-center justify-center gap-2 mt-2 shadow-md cursor-pointer disabled:opacity-50"
+                        className="w-full bg-navy hover:bg-navy/90 text-white font-extrabold h-11 sm:h-12 rounded-md text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-2 mt-1 shadow-md cursor-pointer disabled:opacity-50"
                       >
                         {loading ? "Processing..." : "Request Free Consultation"}
                       </button>
-                      <p className="text-center text-[11px] text-gray-400 pt-1 leading-snug">
-                        By submitting, you agree to our terms, NDA security conditions & privacy policy.
+                      <p className="text-center text-[10px] text-gray-400 pt-0.5 leading-snug">
+                        100% Confidential • NDA Protected • Free Strategy Session
                       </p>
                     </form>
                   )}
@@ -388,7 +399,7 @@ export const Home: React.FC = () => {
               viewport={{ once: true }}
               className="text-gray-500 text-sm md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed"
             >
-              Everything you need to take your manuscript from idea to bestseller — under one roof.
+              Everything you need to take your manuscript from idea to bestseller - under one roof.
             </motion.p>
           </div>
 
@@ -409,6 +420,10 @@ export const Home: React.FC = () => {
                     <img 
                       src={service.img} 
                       alt={service.title} 
+                      loading="lazy"
+                      decoding="async"
+                      width={380}
+                      height={192}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                     />
@@ -568,6 +583,10 @@ export const Home: React.FC = () => {
                   <img 
                     src={author.img} 
                     alt={author.name} 
+                    loading="lazy"
+                    decoding="async"
+                    width={96}
+                    height={96}
                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg group-hover:border-gold transition-colors duration-300"
                     referrerPolicy="no-referrer"
                   />
@@ -635,6 +654,10 @@ export const Home: React.FC = () => {
                   <img 
                     src={testimonial.avatar} 
                     alt={testimonial.name} 
+                    loading="lazy"
+                    decoding="async"
+                    width={56}
+                    height={56}
                     className="w-14 h-14 rounded-full object-cover border-2 border-gold shadow-md"
                     referrerPolicy="no-referrer"
                   />
@@ -685,7 +708,7 @@ export const Home: React.FC = () => {
               </div>
 
               <h2 className="text-3xl md:text-5xl font-serif font-black text-navy leading-tight">
-                Built by Authors, for Authors — America’s Premier Author-First Publishing Partner
+                Built by Authors, for Authors - America’s Premier Author-First Publishing Partner
               </h2>
 
               <p className="text-gray-700 text-sm md:text-base leading-relaxed">
@@ -762,6 +785,10 @@ export const Home: React.FC = () => {
                 <img 
                   src={cms.hero_image_url || "/assets/writing-desk-CeaHrFGY.png"} 
                   alt={cms.hero_image_alt || "Beyond Book Publishing Editorial Desk"} 
+                  loading="lazy"
+                  decoding="async"
+                  width={600}
+                  height={450}
                   className="w-full h-[450px] object-cover hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -820,7 +847,7 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {BLOG_POSTS.slice(0, 3).map((post, pIdx) => (
+            {(cms.blogs && cms.blogs.length > 0 ? cms.blogs : BLOG_POSTS).slice(0, 3).map((post, pIdx) => (
               <article
                 key={pIdx}
                 className="bg-white rounded-xl overflow-hidden border border-gray-150 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
@@ -830,6 +857,10 @@ export const Home: React.FC = () => {
                     <img
                       src={post.img}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                      width={400}
+                      height={225}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <span className="absolute top-3 left-3 bg-gold text-navy text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-xs">

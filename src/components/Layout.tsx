@@ -5,19 +5,107 @@ import { FloatingCTA } from "./FloatingCTA";
 import { ChatAssistant } from "./ChatAssistant";
 import { WavingFlag } from "./WavingFlag";
 import { ScrollToTop } from "./ScrollToTop";
+import { useCMS } from "./CMSContext";
 import { Star } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;
   description?: string;
+  schemaMarkup?: string;
 }
 
 export const Layout: React.FC<LayoutProps> = ({
   children,
-  title = "Beyond Book Publishing – Professional Ghostwriting, Editing & Book Publishing",
+  title = "Beyond Book Publishing | Professional Ghostwriting, Editing & Book Publishing",
   description,
+  schemaMarkup,
 }) => {
+  const { data: cms } = useCMS();
+
+  // Dynamic favicon update
+  useEffect(() => {
+    if (cms?.favicon_url) {
+      let iconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement | null;
+      if (iconLink) {
+        iconLink.href = cms.favicon_url;
+      } else {
+        iconLink = document.createElement("link");
+        iconLink.rel = "icon";
+        iconLink.href = cms.favicon_url;
+        document.head.appendChild(iconLink);
+      }
+    }
+  }, [cms?.favicon_url]);
+
+  // Google Search Console (GSC) verification tag injection
+  useEffect(() => {
+    if (cms?.gsc_verification_id) {
+      const gscCode = cms.gsc_verification_id.trim();
+      if (gscCode) {
+        let gscMeta = document.querySelector('meta[name="google-site-verification"]');
+        if (!gscMeta) {
+          gscMeta = document.createElement("meta");
+          gscMeta.setAttribute("name", "google-site-verification");
+          document.head.appendChild(gscMeta);
+        }
+        gscMeta.setAttribute("content", gscCode);
+      }
+    }
+  }, [cms?.gsc_verification_id]);
+
+  // Google Analytics (GA4) & GTM injection
+  useEffect(() => {
+    // GA4 Script
+    if (cms?.google_analytics_id) {
+      const gaId = cms.google_analytics_id.trim();
+      if (gaId && !document.getElementById("ga-tag-script")) {
+        const gaScript = document.createElement("script");
+        gaScript.id = "ga-tag-script";
+        gaScript.async = true;
+        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(gaScript);
+
+        const inlineGa = document.createElement("script");
+        inlineGa.id = "ga-inline-script";
+        inlineGa.innerHTML = `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${gaId}');`;
+        document.head.appendChild(inlineGa);
+      }
+    }
+
+    // GTM Script
+    if (cms?.gtm_container_id) {
+      const gtmId = cms.gtm_container_id.trim();
+      if (gtmId && !document.getElementById("gtm-tag-script")) {
+        const gtmScript = document.createElement("script");
+        gtmScript.id = "gtm-tag-script";
+        gtmScript.innerHTML = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`;
+        document.head.appendChild(gtmScript);
+      }
+    }
+  }, [cms?.google_analytics_id, cms?.gtm_container_id]);
+
+  // Schema.org Structured Data JSON-LD injection
+  useEffect(() => {
+    const rawSchema = schemaMarkup || cms?.custom_schema_json;
+    if (rawSchema && rawSchema.trim()) {
+      let schemaTag = document.getElementById("structured-data-schema") as HTMLScriptElement | null;
+      if (!schemaTag) {
+        schemaTag = document.createElement("script");
+        schemaTag.id = "structured-data-schema";
+        schemaTag.type = "application/ld+json";
+        document.head.appendChild(schemaTag);
+      }
+      try {
+        // Validate JSON structure before setting
+        JSON.parse(rawSchema);
+        schemaTag.textContent = rawSchema;
+      } catch (e) {
+        schemaTag.textContent = rawSchema;
+      }
+    }
+  }, [schemaMarkup, cms?.custom_schema_json]);
+
   // Update document title and description meta if they change
   useEffect(() => {
     const fullTitle = title.includes("Beyond Book")

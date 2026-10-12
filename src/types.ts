@@ -16,6 +16,11 @@ export interface ServiceItem {
   tagline: string;
   category: string;
   img: string;
+  imgAlt?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  focusKeywords?: string;
+  schemaMarkup?: string;
   gallery: string[];
   description: string;
   benefits: string[];
@@ -76,5 +81,29 @@ export interface BlogPostItem {
   date: string;
   readTime: string;
   img: string;
+  imgAlt?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  focusKeywords?: string;
+  schemaMarkup?: string;
   tags?: string[];
+}
+
+export interface CustomPageItem {
+  id: string;
+  slug: string;
+  title: string;
+  status: "published" | "draft";
+  heroHeadline?: string;
+  heroSubheadline?: string;
+  content: string;
+  excerpt?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  focusKeywords?: string;
+  schemaMarkup?: string;
+  showInHeaderNav?: boolean;
+  showInFooter?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

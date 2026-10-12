@@ -171,7 +171,7 @@ Do not restrict your book to a single retailer. At Beyond Book Publishing, we re
 
 Learn the exact multi-platform setup in our companion guide: [Amazon KDP vs. IngramSpark Strategy](/blog/amazon-kdp-vs-ingramspark-hybrid-guide).
 
-> **Key Publishing Takeaway:** Retaining 100% of your rights and royalties is not a luxury—it is the modern standard for forward-thinking authors. Explore our transparent [Publishing Packages & Pricing](/pricing) or [Schedule a Free Consultation](/contact) with a Senior Publishing Director today.`
+> **Key Publishing Takeaway:** Retaining 100% of your rights and royalties is not a luxury - it is the modern standard for forward-thinking authors. Explore our transparent [Publishing Packages & Pricing](/pricing) or [Schedule a Free Consultation](/contact) with a Senior Publishing Director today.`
   },
   {
     id: "blog-2",
@@ -336,7 +336,7 @@ If you prefer to collaborate closely with a master writer, our [Professional Gho
 ### The 4 Pillars of Unputdownable Memoirs:
 1. **The Thematic Premise:** Ask yourself: What is the emotional thesis of my story? If you cannot articulate your core transformation in one sentence, readers will feel untethered.
 2. **Honesty Over Vanity:** Readers do not connect with flawless protagonists. They empathize with vulnerability, self-doubt, and hard-earned wisdom.
-3. **Scene-Building vs. Exposition:** Show the reader the frozen steering wheel, the smell of hospital floor wax, or the tension in the boardroom. Don't merely report what occurred—recreate the sensorial landscape.
+3. **Scene-Building vs. Exposition:** Show the reader the frozen steering wheel, the smell of hospital floor wax, or the tension in the boardroom. Don't merely report what occurred - recreate the sensorial landscape.
 4. **Navigating Legal and Family Boundaries:** Balance emotional authenticity with defamation safeguards. When appropriate, use composite characters or alter identifying specifics without sacrificing emotional truth.
 
 > **Pro Author Tip:** Before hiring an outside writer, review our framework: [How to Hire an Elite Ghostwriter for Your Book](/blog/how-to-hire-elite-ghostwriter-framework).
@@ -360,7 +360,7 @@ Once written, every memoir requires rigorous [Developmental & Line Editing](/ser
     tags: ["Book Marketing", "Amazon Ads", "Newsletter Swaps", "Book Sales"],
     content: `## The Social Media Trap Most Indie Authors Fall Into
 
-Posting daily excerpts on X or Instagram rarely moves the needle for book sales. Readers browse social platforms for short dopamine hits—not to purchase $18 paperbacks. Profitable book marketing requires building direct, predictable reader discovery funnels. Our [Strategic Book Marketing & Promotion](/services/book-marketing) team focuses on conversion-backed strategies.
+Posting daily excerpts on X or Instagram rarely moves the needle for book sales. Readers browse social platforms for short dopamine hits - not to purchase $18 paperbacks. Profitable book marketing requires building direct, predictable reader discovery funnels. Our [Strategic Book Marketing & Promotion](/services/book-marketing) team focuses on conversion-backed strategies.
 
 To convert clicks into lifelong fans, every author also needs a dedicated hub via [Custom Author Website Design](/services/author-website) and an attention-grabbing [Cinematic Book Trailer](/services/book-trailer).
 
@@ -468,16 +468,16 @@ Writing for children is not simply writing "shorter stories." It is an exacting 
 We also provide custom layout engineering for print along with [Fixed-Layout eBook Conversion](/services/ebook) and [Custom Book Cover Design](/services/cover-design).
 
 ### Understanding Industry Age Tiers:
-- **Board Books (Ages 0–3):** 50–100 words, durable cardboard stock, high-contrast primary colors.
-- **Picture Books (Ages 4–8):** 500–800 words, standardized 32-page count, balance of whimsical text and captivating full-spread artwork.
-- **Early Readers (Ages 6–9):** 1,000–2,500 words, segmented short chapters, repetitive vocabulary structures.
-- **Middle Grade (Ages 8–12):** 20,000–45,000 words, rich narrative voice, illustrated spot headers.
+- **Board Books (Ages 0 - 3):** 50 - 100 words, durable cardboard stock, high-contrast primary colors.
+- **Picture Books (Ages 4 - 8):** 500 - 800 words, standardized 32-page count, balance of whimsical text and captivating full-spread artwork.
+- **Early Readers (Ages 6 - 9):** 1,000 - 2,500 words, segmented short chapters, repetitive vocabulary structures.
+- **Middle Grade (Ages 8 - 12):** 20,000 - 45,000 words, rich narrative voice, illustrated spot headers.
 
 ### The 32-Page Layout Architecture
 In picture book production, pages are bound in multiples of eight. A standard 32-page book allocates:
-- Pages 1–4: Endpapers, Title Page, Copyright & Dedication.
-- Pages 5–30: The core narrative delivered across 12–14 double-page spreads.
-- Pages 31–32: Back matter, author notes, and back endpapers.
+- Pages 1 - 4: Endpapers, Title Page, Copyright & Dedication.
+- Pages 5 - 30: The core narrative delivered across 12 - 14 double-page spreads.
+- Pages 31 - 32: Back matter, author notes, and back endpapers.
 
 ### Illustration Synchronization
 At Beyond Book Publishing, our illustrators design with 0.125-inch full bleed margins, CMYK color gamut calibration, and careful text-safe zones so children and parents enjoy a seamless reading experience.
@@ -503,13 +503,14 @@ export const DEFAULT_HERO = {
 };
 
 export const WHY_CHOOSE_US_STATS = [
-  { title: "Author-First Philosophy", desc: "You keep 100% of your royalties and creative control — always." },
+  { title: "Author-First Philosophy", desc: "You keep 100% of your royalties and creative control - always." },
   { title: "Uncompromising Quality", desc: "Every manuscript is reviewed by senior editors and proofreaders before delivery." },
   { title: "Elite American Guild", desc: "All writers, editors, and designers are vetted literary professionals with bestselling credits." },
   { title: "Proven Track Record", desc: "3,400+ satisfied authors and hundreds of bestselling titles published worldwide." }
 ];
 
 export const NAV_LINKS = [
+  { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   {
     label: "Services",

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Layout } from "../components/Layout";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import { useCMS } from "../components/CMSContext";
 import { BLOG_POSTS } from "../data/websiteData";
 import {
   Calendar,
@@ -17,6 +18,9 @@ import {
 } from "lucide-react";
 
 export const Blog: React.FC = () => {
+  const { data: cms } = useCMS();
+  const allPosts = cms.blogs && cms.blogs.length > 0 ? cms.blogs : BLOG_POSTS;
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -24,12 +28,12 @@ export const Blog: React.FC = () => {
 
   const categories = useMemo(() => {
     const list = new Set<string>();
-    BLOG_POSTS.forEach((p) => list.add(p.category));
+    allPosts.forEach((p) => list.add(p.category));
     return ["All", ...Array.from(list)];
-  }, []);
+  }, [allPosts]);
 
   const filteredPosts = useMemo(() => {
-    return BLOG_POSTS.filter((post) => {
+    return allPosts.filter((post) => {
       const matchesCategory =
         selectedCategory === "All" || post.category === selectedCategory;
       const query = searchQuery.toLowerCase().trim();
@@ -43,7 +47,7 @@ export const Blog: React.FC = () => {
     });
   }, [selectedCategory, searchQuery]);
 
-  const featuredPost = filteredPosts[0] || BLOG_POSTS[0];
+  const featuredPost = filteredPosts[0] || allPosts[0];
   const gridPosts = filteredPosts.slice(1);
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -55,8 +59,8 @@ export const Blog: React.FC = () => {
 
   return (
     <Layout
-      title="Author Resource Guides & Publishing Insights Blog – Beyond Book Publishing"
-      description="Explore 10 comprehensive, expert publishing guides from Beyond Book Publishing (BeyondBookpublishing.com). Learn ghostwriting, cover design, editing, and royalty maximization."
+      title={cms.seo_blog_title || "Author Resource Guides & Publishing Insights Blog | Beyond Book Publishing"}
+      description={cms.seo_blog_desc || "Explore 10 comprehensive, expert publishing guides from Beyond Book Publishing (BeyondBookpublishing.com). Learn ghostwriting, cover design, editing, and royalty maximization."}
     >
       {/* Breadcrumbs Navigation */}
       <div className="bg-cream/80 border-b border-gray-150 py-3">

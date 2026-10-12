@@ -66,7 +66,7 @@ export const About: React.FC = () => {
     {
       feature: "Author Royalties",
       us: "100% Kept by You",
-      trad: "8% – 15% Net",
+      trad: "8% - 15% Net",
       vanity: "Variable / Hidden fees",
     },
     {
@@ -77,8 +77,8 @@ export const About: React.FC = () => {
     },
     {
       feature: "Publishing Timeline",
-      us: "6 – 9 Months",
-      trad: "2 – 3 Years average",
+      us: "6 - 9 Months",
+      trad: "2 - 3 Years average",
       vanity: "Rushed / Template (2-4 wks)",
     },
     {
@@ -103,7 +103,7 @@ export const About: React.FC = () => {
 
   return (
     <Layout
-      title={cms.seo_about_title || "About Beyond Book Publishing — Our Story, Team & Publishing Mission"}
+      title={cms.seo_about_title || "About Beyond Book Publishing - Our Story, Team & Publishing Mission"}
       description={cms.seo_about_desc || "Learn how Beyond Book Publishing (BeyondBookpublishing.com) became the most trusted author-first publishing house. 100% royalties, master ghostwriters, and over 3,400 published books."}
     >
       {/* Intro Hero banner */}
@@ -126,11 +126,11 @@ export const About: React.FC = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-serif font-black leading-tight text-white">
-            Built by Authors, for Authors — <span className="text-gold">Your Legacy</span> in Print
+            Built by Authors, for Authors - <span className="text-gold">Your Legacy</span> in Print
           </h1>
 
           <p className="text-gray-300 text-base md:text-xl mt-6 leading-relaxed max-w-2xl mx-auto">
-            Founded on the unshakeable belief that every storyteller deserves the elite caliber of a traditional Manhattan publishing house — without surrendering their rights, royalties, or creative freedom.
+            Founded on the unshakeable belief that every storyteller deserves the elite caliber of a traditional Manhattan publishing house - without surrendering their rights, royalties, or creative freedom.
           </p>
 
           {/* Quick Metrics Bar */}
@@ -170,10 +170,10 @@ export const About: React.FC = () => {
 
               <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base">
                 <p>
-                  Beyond Book Publishing (BeyondBookpublishing.com) was born out of frustration. Our founders — experienced independent authors and veteran editors — were tired of watching gifted writers surrender their intellectual property, wait three agonizing years for a launch date, and forfeit up to 88% of their royalties to legacy publishing gatekeepers.
+                  {cms.about_story_p1 || "Beyond Book Publishing (BeyondBookpublishing.com) was born out of frustration. Our founders - experienced independent authors and veteran editors - were tired of watching gifted writers surrender their intellectual property, wait three agonizing years for a launch date, and forfeit up to 88% of their royalties to legacy publishing gatekeepers."}
                 </p>
                 <p>
-                  In 2014, we pioneered a different kind of publishing company: <strong>The Author-First Model</strong>. A collaborative environment where writers are treated as equity partners, not corporate commodities. Where your manuscript receives world-class editorial polish, award-winning cover design, and international distribution across 40,000+ bookstores — while every single dollar of your royalty checks goes directly into your bank account.
+                  {cms.about_story_p2 || "In 2014, we pioneered a different kind of publishing company: The Author-First Model. A collaborative environment where writers are treated as equity partners, not corporate commodities. Where your manuscript receives world-class editorial polish, award-winning cover design, and international distribution across 40,000+ bookstores - while every single dollar of your royalty checks goes directly into your bank account."}
                 </p>
                 <p>
                   Today, our collective comprises over 80 vetted master ghostwriters, developmental editors, and literary publicists who have shepherded over 3,400 titles from conceptual sparkle to #1 Amazon Bestseller lists.
@@ -218,8 +218,8 @@ export const About: React.FC = () => {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-navy">
                 <img
-                  src="/assets/writing-desk-CeaHrFGY.png"
-                  alt="Beyond Book Publishing editorial desk"
+                  src={cms.about_intro_img || "/assets/writing-desk-CeaHrFGY.png"}
+                  alt={cms.about_intro_img_alt || "Beyond Book Publishing editorial desk"}
                   className="w-full h-[480px] object-cover hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -367,7 +367,7 @@ export const About: React.FC = () => {
                   <div className="relative h-72 overflow-hidden bg-navy">
                     <img
                       src={member.img}
-                      alt={`${member.name} — ${member.role}`}
+                      alt={`${member.name} - ${member.role}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         const target = e.currentTarget;

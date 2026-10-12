@@ -109,7 +109,7 @@ export const GenreSection: React.FC = () => {
             viewport={{ once: true }}
             className="text-gray-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed"
           >
-            From faith-driven biblical works to HR leadership guides and illustrated art books — our expert ghostwriters master every niche so your book fits perfectly on any shelf.
+            From faith-driven biblical works to HR leadership guides and illustrated art books, our expert ghostwriters master every niche so your book fits perfectly on any shelf.
           </motion.p>
         </div>
 

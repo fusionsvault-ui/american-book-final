@@ -153,7 +153,7 @@ export const BookCarousel: React.FC = () => {
           Discover The Many Manuscripts From Thriving Publishing Authors
         </h2>
         <p className="text-gray-500 text-sm md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
-          Hundreds of books published across every genre — each one a real story, a real author, a dream fulfilled with Beyond Book Publishing.
+          Hundreds of books published across every genre. Each one a real story, a real author, a dream fulfilled with Beyond Book Publishing.
         </p>
       </div>
 

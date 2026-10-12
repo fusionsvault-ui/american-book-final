@@ -4,6 +4,7 @@ import { Layout } from "../components/Layout";
 import { QuoteModal } from "../components/QuoteModal";
 import { BookCarousel } from "../components/BookCarousel";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import { useCMS } from "../components/CMSContext";
 import { SERVICES, ServiceItem } from "../data/servicesData";
 import { motion } from "motion/react";
 import { 
@@ -176,6 +177,8 @@ const GallerySlider: React.FC<GallerySliderProps> = ({ images, serviceTitle }) =
 };
 
 export const ServiceDetails: React.FC = () => {
+  const { data: cms } = useCMS();
+  const allServices = cms.services && cms.services.length > 0 ? cms.services : SERVICES;
   const [match, params] = useRoute("/services/:slug");
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -185,7 +188,7 @@ export const ServiceDetails: React.FC = () => {
     const { slug } = params as { slug: string };
     
     // 1. Direct match
-    const direct = SERVICES.find((s) => s.slug === slug);
+    const direct = allServices.find((s) => s.slug === slug);
     if (direct) return direct;
 
     // 2. Normalize and check aliases
@@ -215,23 +218,23 @@ export const ServiceDetails: React.FC = () => {
 
     const targetSlug = aliasMap[normalized];
     if (targetSlug) {
-      const aliasMatch = SERVICES.find((s) => s.slug === targetSlug);
+      const aliasMatch = allServices.find((s) => s.slug === targetSlug);
       if (aliasMatch) return aliasMatch;
     }
 
     // 3. Normalized slug comparison
     return (
-      SERVICES.find((s) => s.slug.replace(/-/g, "") === normalized) || null
+      allServices.find((s) => s.slug.replace(/-/g, "") === normalized) || null
     );
-  }, [match, params]);
+  }, [match, params, allServices]);
 
   // Derived related services
   const relatedServicesList = useMemo(() => {
     if (!service || !service.relatedServices) return [];
     return service.relatedServices
-      .map((slug) => SERVICES.find((s) => s.slug === slug))
+      .map((slug) => allServices.find((s) => s.slug === slug))
       .filter((s): s is ServiceItem => !!s);
-  }, [service]);
+  }, [service, allServices]);
 
   if (!service) {
     return (
@@ -249,10 +252,37 @@ export const ServiceDetails: React.FC = () => {
     );
   }
 
+  const pageTitle = service.metaTitle || `${service.title} | Beyond Book Publishing`;
+  const pageDesc = service.metaDesc || `${service.title} - ${service.tagline} Professional ${service.category.toLowerCase()} services at Beyond Book Publishing (BeyondBookpublishing.com).`;
+  const serviceAlt = service.imgAlt || `${service.title} - Beyond Book Publishing`;
+
+  const serviceSchema = useMemo(() => {
+    if (service.schemaMarkup && service.schemaMarkup.trim()) return service.schemaMarkup;
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": `${service.title} - Beyond Book Publishing`,
+      "serviceType": service.title,
+      "provider": {
+        "@type": "Organization",
+        "name": "Beyond Book Publishing",
+        "url": "https://beyondbookpublishing.com"
+      },
+      "description": service.description || service.tagline,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free initial publishing consultation"
+      }
+    }, null, 2);
+  }, [service]);
+
   return (
     <Layout
-      title={`${service.title} - Beyond Book Publishing`}
-      description={`${service.title} — ${service.tagline} Professional ${service.category.toLowerCase()} services at Beyond Book Publishing (BeyondBookpublishing.com).`}
+      title={pageTitle}
+      description={pageDesc}
+      schemaMarkup={serviceSchema}
     >
       <QuoteModal
         open={modalOpen}
@@ -267,7 +297,7 @@ export const ServiceDetails: React.FC = () => {
         <div className="absolute inset-0">
           <img
             src={service.img}
-            alt={service.title}
+            alt={serviceAlt}
             loading="eager"
             decoding="async"
             className="w-full h-full object-cover opacity-20"
@@ -364,7 +394,7 @@ export const ServiceDetails: React.FC = () => {
             <div className="relative">
               <img
                 src={service.img}
-                alt={`${service.title} — professional book service`}
+                alt={serviceAlt}
                 loading="lazy"
                 decoding="async"
                 className="rounded-2xl shadow-2xl w-full object-cover h-80"

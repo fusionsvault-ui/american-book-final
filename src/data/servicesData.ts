@@ -15,6 +15,11 @@ export interface ServiceItem {
   tagline: string;
   category: string;
   img: string;
+  imgAlt?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  focusKeywords?: string;
+  schemaMarkup?: string;
   gallery: string[];
   description: string;
   benefits: string[];
@@ -41,7 +46,7 @@ export const SERVICES: ServiceItem[] = [
     ],
     "description": "Our professional ghostwriters capture your voice and bring your ideas to life. From concept to final manuscript, we handle every aspect of the writing process while you retain full authorship and 100% of your royalties.",
     "benefits": [
-      "100% confidential — you keep full credit",
+      "100% confidential - you keep full credit",
       "Experienced writers across all genres",
       "Unlimited revisions until you're satisfied",
       "NDA signed before we begin",
@@ -107,7 +112,7 @@ export const SERVICES: ServiceItem[] = [
       },
       {
         "q": "Do I keep the rights?",
-        "a": "Yes — you retain 100% of the copyright, royalties, and authorship."
+        "a": "Yes - you retain 100% of the copyright, royalties, and authorship."
       }
     ],
     "relatedServices": [
@@ -160,7 +165,7 @@ export const SERVICES: ServiceItem[] = [
       }
     ],
     "whyChoose": [
-      "Genre-matched writers — fiction, non-fiction, memoir, academic",
+      "Genre-matched writers - fiction, non-fiction, memoir, academic",
       "Built-in research and fact-checking included",
       "Real-time collaboration via our author portal",
       "Chapter-by-chapter approval process",
@@ -263,7 +268,7 @@ export const SERVICES: ServiceItem[] = [
       },
       {
         "title": "Entrepreneur Journey",
-        "desc": "A tech founder's journey from garage to IPO — written as an inspiring business memoir."
+        "desc": "A tech founder's journey from garage to IPO - written as an inspiring business memoir."
       },
       {
         "title": "War Veteran Story",
@@ -287,7 +292,7 @@ export const SERVICES: ServiceItem[] = [
       },
       {
         "q": "How long is a typical memoir?",
-        "a": "Most memoirs are 50,000–80,000 words (200–300 pages). We can adjust based on your goals."
+        "a": "Most memoirs are 50,000 - 80,000 words (200 - 300 pages). We can adjust based on your goals."
       }
     ],
     "relatedServices": [
@@ -309,7 +314,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-bio-3.jpg",
       "/svc-memoir.jpg"
     ],
-    "description": "Our biography writers craft detailed, factual, and compelling accounts of real lives — from historical figures to business leaders and celebrities. We research deeply and write narratives that inspire and inform.",
+    "description": "Our biography writers craft detailed, factual, and compelling accounts of real lives - from historical figures to business leaders and celebrities. We research deeply and write narratives that inspire and inform.",
     "benefits": [
       "Rigorous historical and archival research",
       "Authoritative yet engaging narrative tone",
@@ -469,7 +474,7 @@ export const SERVICES: ServiceItem[] = [
       },
       {
         "q": "Do you include illustration notes?",
-        "a": "Yes — our manuscripts include detailed illustration notes to help artists understand the visual direction."
+        "a": "Yes - our manuscripts include detailed illustration notes to help artists understand the visual direction."
       },
       {
         "q": "How long is a children's book?",
@@ -505,7 +510,7 @@ export const SERVICES: ServiceItem[] = [
       "Grammar, spelling, and punctuation fixes",
       "Consistency checks for names and terms",
       "Formatting and style guide compliance",
-      "Fast 3–5 day turnaround available"
+      "Fast 3 - 5 day turnaround available"
     ],
     "process": [
       {
@@ -679,7 +684,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-pub-3.jpg",
       "/svc-print-demand.jpg"
     ],
-    "description": "We guide you through every step of self-publishing — from ISBN registration to distribution on Amazon, Barnes & Noble, and beyond. Keep 100% of your royalties and creative control.",
+    "description": "We guide you through every step of self-publishing - from ISBN registration to distribution on Amazon, Barnes & Noble, and beyond. Keep 100% of your royalties and creative control.",
     "benefits": [
       "Amazon KDP and IngramSpark setup",
       "ISBN and LCCN registration",
@@ -713,7 +718,7 @@ export const SERVICES: ServiceItem[] = [
       "Complete Amazon KDP and IngramSpark setup",
       "ISBN registration and barcode generation",
       "Global distribution to 40,000+ retailers",
-      "100% royalty retention — you keep everything",
+      "100% royalty retention - you keep everything",
       "Author account management and training"
     ],
     "examples": [
@@ -769,7 +774,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-ebook-3.jpg",
       "/service-publishing.jpg"
     ],
-    "description": "We convert and publish your book across all major ebook platforms — Kindle, Apple Books, Kobo, Google Play, and more. Reach readers on every device with a perfectly formatted digital edition.",
+    "description": "We convert and publish your book across all major ebook platforms - Kindle, Apple Books, Kobo, Google Play, and more. Reach readers on every device with a perfectly formatted digital edition.",
     "benefits": [
       "Kindle, Apple Books, Kobo, Google Play",
       "Proper ePub and MOBI formatting",
@@ -837,7 +842,7 @@ export const SERVICES: ServiceItem[] = [
       },
       {
         "q": "Can I publish in different countries?",
-        "a": "Yes — all platforms support global distribution. We can set pricing and availability by region."
+        "a": "Yes - all platforms support global distribution. We can set pricing and availability by region."
       }
     ],
     "relatedServices": [
@@ -859,7 +864,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-print-3.jpg",
       "/service-publishing.jpg"
     ],
-    "description": "With print-on-demand publishing, your book is printed and shipped only when someone orders it — no warehousing, no upfront costs, no risk. We set up your POD listing on Amazon KDP and IngramSpark so you earn royalties on every copy sold.",
+    "description": "With print-on-demand publishing, your book is printed and shipped only when someone orders it - no warehousing, no upfront costs, no risk. We set up your POD listing on Amazon KDP and IngramSpark so you earn royalties on every copy sold.",
     "benefits": [
       "Zero upfront printing costs",
       "Available on Amazon and 40,000+ retailers",
@@ -949,9 +954,9 @@ export const SERVICES: ServiceItem[] = [
       "/gal-cover-3.jpg",
       "/svc-book-writing.jpg"
     ],
-    "description": "Our award-winning designers create covers that stop scrollers in their tracks. Genre-appropriate, commercially savvy, and stunning in print and digital — every cover is designed to sell.",
+    "description": "Our award-winning designers create covers that stop scrollers in their tracks. Genre-appropriate, commercially savvy, and stunning in print and digital - every cover is designed to sell.",
     "benefits": [
-      "Custom designed — never a template",
+      "Custom designed - never a template",
       "Front, back, and spine included",
       "Print-ready and ebook formats",
       "Unlimited revision rounds",
@@ -980,7 +985,7 @@ export const SERVICES: ServiceItem[] = [
       }
     ],
     "whyChoose": [
-      "100% custom designs — never templates",
+      "100% custom designs - never templates",
       "Front, back, and spine included for print books",
       "Print-ready and ebook thumbnail formats",
       "Unlimited revision rounds until you love it",
@@ -1129,7 +1134,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-web-3.jpg",
       "/service-marketing.jpg"
     ],
-    "description": "Every serious author needs a professional website. We design and build a stunning author site that showcases your books, bio, blog, and contact form — optimized for SEO so readers can find you on Google.",
+    "description": "Every serious author needs a professional website. We design and build a stunning author site that showcases your books, bio, blog, and contact form - optimized for SEO so readers can find you on Google.",
     "benefits": [
       "Custom design that matches your brand",
       "Mobile-responsive and fast-loading",
@@ -1219,7 +1224,7 @@ export const SERVICES: ServiceItem[] = [
       "/gal-social-3.jpg",
       "/svc-author-website.jpg"
     ],
-    "description": "We manage your author presence on Facebook, Instagram, TikTok (BookTok), and X — creating scroll-stopping content that builds your following, drives book sales, and turns readers into fans.",
+    "description": "We manage your author presence on Facebook, Instagram, TikTok (BookTok), and X - creating scroll-stopping content that builds your following, drives book sales, and turns readers into fans.",
     "benefits": [
       "Content creation across all major platforms",
       "BookTok and Instagram Reels strategy",
@@ -1309,13 +1314,13 @@ export const SERVICES: ServiceItem[] = [
       "/gal-trailer-3.jpg",
       "/service-marketing.jpg"
     ],
-    "description": "Book trailers are one of the most powerful marketing tools an author can have. We produce professional, cinematic book trailers that capture the mood of your story and drive readers to buy — perfect for social media, your website, and Amazon.",
+    "description": "Book trailers are one of the most powerful marketing tools an author can have. We produce professional, cinematic book trailers that capture the mood of your story and drive readers to buy - perfect for social media, your website, and Amazon.",
     "benefits": [
       "Professional scriptwriting and storyboarding",
       "Cinematic visuals and licensed music",
-      "60–90 second optimized length",
+      "60 - 90 second optimized length",
       "Formatted for YouTube, Instagram, and TikTok",
-      "Full rights — use it anywhere forever"
+      "Full rights - use it anywhere forever"
     ],
     "process": [
       {
@@ -1344,7 +1349,7 @@ export const SERVICES: ServiceItem[] = [
       "Cinematic visuals with licensed music and sound design",
       "60-90 second optimized length for maximum engagement",
       "Formatted for YouTube, Instagram, TikTok, and Amazon",
-      "Full rights — use it anywhere, forever"
+      "Full rights - use it anywhere, forever"
     ],
     "examples": [
       {

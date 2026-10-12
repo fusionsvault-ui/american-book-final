@@ -46,7 +46,7 @@ export const Footer: React.FC = () => {
             {/* Social Media Links */}
             <div className="flex gap-3">
               <a
-                href="https://facebook.com/BeyondBookPublishing"
+                href={cms.facebook_url || "https://facebook.com/BeyondBookPublishing"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-colors"
@@ -55,7 +55,7 @@ export const Footer: React.FC = () => {
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="https://twitter.com/BeyondBookPub"
+                href={cms.twitter_url || "https://twitter.com/BeyondBookPub"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-colors"
@@ -64,7 +64,7 @@ export const Footer: React.FC = () => {
                 <Twitter className="w-4 h-4" />
               </a>
               <a
-                href="https://instagram.com/beyondbookpublishing"
+                href={cms.instagram_url || "https://instagram.com/beyondbookpublishing"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-colors"
@@ -73,7 +73,7 @@ export const Footer: React.FC = () => {
                 <Instagram className="w-4 h-4" />
               </a>
               <a
-                href="https://linkedin.com/company/beyond-book-publishing"
+                href={cms.linkedin_url || "https://linkedin.com/company/beyond-book-publishing"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold hover:text-navy transition-colors"
