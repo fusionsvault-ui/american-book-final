@@ -13,6 +13,9 @@ interface LayoutProps {
   title?: string;
   description?: string;
   schemaMarkup?: string;
+  noindex?: boolean;
+  ogImage?: string;
+  canonicalUrl?: string;
 }
 
 export const Layout: React.FC<LayoutProps> = ({
@@ -20,6 +23,9 @@ export const Layout: React.FC<LayoutProps> = ({
   title = "Beyond Book Publishing | Professional Ghostwriting, Editing & Book Publishing",
   description,
   schemaMarkup,
+  noindex,
+  ogImage,
+  canonicalUrl,
 }) => {
   const { data: cms } = useCMS();
 
@@ -106,11 +112,42 @@ export const Layout: React.FC<LayoutProps> = ({
     }
   }, [schemaMarkup, cms?.custom_schema_json]);
 
-  // Update document title and description meta if they change
+  // Propagate Centralized SEO: site-wide or page-specific noindex, titles, descriptions, and canonicals
   useEffect(() => {
+    // 1. Resolve No-Index status
+    const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
+    const pathSlug = pathname.replace(/^\//, "").toLowerCase();
+    const isGlobalNoIndex = cms?.global_noindex !== false; // Default true (site-wide noindex active)
+    const isPageNoIndex = Boolean(
+      cms?.page_noindex && (
+        cms.page_noindex[pathname] === true ||
+        cms.page_noindex[pathSlug] === true ||
+        (pathSlug === "" && cms.page_noindex["/"] === true)
+      )
+    );
+    const shouldNoIndex = isGlobalNoIndex || noindex === true || isPageNoIndex;
+
+    // Apply or update <meta name="robots"> tag
+    let robotsMeta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robotsMeta) {
+      robotsMeta = document.createElement("meta");
+      robotsMeta.name = "robots";
+      document.head.appendChild(robotsMeta);
+    }
+    if (shouldNoIndex) {
+      robotsMeta.setAttribute("content", "noindex, nofollow");
+    } else {
+      robotsMeta.setAttribute(
+        "content",
+        "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      );
+    }
+
+    // 2. Propagate Title with default suffix
+    const suffix = cms?.global_meta_defaults?.title_suffix || " | Beyond Book Publishing";
     const fullTitle = title.includes("Beyond Book")
       ? title
-      : `${title} | Beyond Book Publishing`;
+      : `${title}${suffix}`;
     document.title = fullTitle;
 
     // Update OpenGraph and Twitter titles
@@ -119,23 +156,50 @@ export const Layout: React.FC<LayoutProps> = ({
     const twTitle = document.querySelector('meta[name="twitter:title"]');
     if (twTitle) twTitle.setAttribute("content", fullTitle);
 
-    if (description) {
-      const meta = document.querySelector('meta[name="description"]');
-      if (meta) {
-        meta.setAttribute("content", description);
-      } else {
-        const newMeta = document.createElement("meta");
-        newMeta.name = "description";
-        newMeta.content = description;
-        document.head.appendChild(newMeta);
-      }
+    // 3. Propagate Description
+    const effectiveDesc =
+      description ||
+      cms?.global_meta_defaults?.default_meta_desc ||
+      cms?.seo_home_desc ||
+      "Beyond Book Publishing provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties.";
 
-      const ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc) ogDesc.setAttribute("content", description);
-      const twDesc = document.querySelector('meta[name="twitter:description"]');
-      if (twDesc) twDesc.setAttribute("content", description);
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", effectiveDesc);
+    } else {
+      const newMeta = document.createElement("meta");
+      newMeta.name = "description";
+      newMeta.content = effectiveDesc;
+      document.head.appendChild(newMeta);
     }
-  }, [title, description]);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", effectiveDesc);
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twDesc) twDesc.setAttribute("content", effectiveDesc);
+
+    // 4. Propagate Canonical URL
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "https://beyondbookpublishing.com";
+    const currentCanonicalHref = canonicalUrl || `${currentOrigin}${pathname}`;
+    let canonicalTag = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (canonicalTag) {
+      canonicalTag.setAttribute("href", currentCanonicalHref);
+    } else {
+      canonicalTag = document.createElement("link");
+      canonicalTag.rel = "canonical";
+      canonicalTag.href = currentCanonicalHref;
+      document.head.appendChild(canonicalTag);
+    }
+
+    // 5. Propagate OG / Twitter Image
+    const effectiveOgImg = ogImage || cms?.global_meta_defaults?.default_og_image || cms?.og_image_url;
+    if (effectiveOgImg) {
+      const ogImgTag = document.querySelector('meta[property="og:image"]');
+      if (ogImgTag) ogImgTag.setAttribute("content", effectiveOgImg);
+      const twImgTag = document.querySelector('meta[name="twitter:image"]');
+      if (twImgTag) twImgTag.setAttribute("content", effectiveOgImg);
+    }
+  }, [title, description, noindex, ogImage, canonicalUrl, cms?.global_noindex, cms?.page_noindex, cms?.global_meta_defaults]);
 
   // Global capture listener to ensure ANY link click resets scroll position to the top
   useEffect(() => {

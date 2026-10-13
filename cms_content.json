@@ -36,5 +36,15 @@
   "footer_desc": "Beyond Book Publishing (BeyondBookpublishing.com) is an author-first publishing house. Providing professional ghostwriting, editing, cover design, and global distribution. Retain 100% of your royalties and copyright.",
   "header_phone": "",
   "header_show_phone": false,
-  "custom_pages": []
+  "custom_pages": [],
+  "global_noindex": true,
+  "global_nofollow": true,
+  "page_noindex": {},
+  "custom_robots_txt": "User-agent: *\nDisallow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml",
+  "global_meta_defaults": {
+    "title_suffix": " | Beyond Book Publishing",
+    "default_meta_desc": "Beyond Book Publishing (BeyondBookpublishing.com) provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties.",
+    "default_og_image": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=1200&h=630",
+    "default_author": "Beyond Book Publishing"
+  }
 }

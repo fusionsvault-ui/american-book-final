@@ -65,7 +65,11 @@ import {
   FilePlus,
   MapPin,
   User,
-  Laptop
+  Laptop,
+  ShieldAlert,
+  ShieldCheck,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 
 interface LeadItem {
@@ -117,7 +121,7 @@ type AdminTab =
   | "tools";
 
 export const AdminDashboard: React.FC = () => {
-  const { data: cms, saveData, refresh, resetToDefaults } = useCMS();
+  const { data: cms, saveData, refresh, resetToDefaults, dbConnected, syncStatus } = useCMS();
 
   // ================= AUTHENTICATION STATE =================
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -971,6 +975,174 @@ export const AdminDashboard: React.FC = () => {
     return chatSessions.find((s) => s.sessionId === activeChatSessionId) || chatSessions[0] || null;
   }, [chatSessions, activeChatSessionId]);
 
+  // ================= CENTRALIZED SEO & NO-INDEX STATE & HELPERS =================
+  const [propagationFeedback, setPropagationFeedback] = useState<string | null>(null);
+  const [indexationDirectoryFilter, setIndexationDirectoryFilter] = useState<string>("");
+  const [indexationTypeFilter, setIndexationTypeFilter] = useState<"all" | "core" | "service" | "blog" | "custom">("all");
+
+  const handleToggleGlobalNoIndex = (enabled: boolean) => {
+    const updatedRobots = enabled
+      ? "User-agent: *\nDisallow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml"
+      : "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://beyondbookpublishing.com/sitemap.xml";
+    setFormData((prev) => ({
+      ...prev,
+      global_noindex: enabled,
+      global_nofollow: enabled,
+      custom_robots_txt: updatedRobots,
+    }));
+  };
+
+  const handleTogglePageNoIndex = (type: "core" | "service" | "blog" | "custom", slugOrKey: string, value: boolean) => {
+    if (type === "service") {
+      updateServiceField(slugOrKey, "noindex", value);
+    } else if (type === "blog") {
+      updateBlogField(slugOrKey, "noindex", value);
+    } else if (type === "custom") {
+      updateCustomPageField(slugOrKey, "noindex", value);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        page_noindex: {
+          ...(prev.page_noindex || {}),
+          [slugOrKey]: value,
+        },
+      }));
+    }
+  };
+
+  const isPageDirectlyNoIndexed = (type: "core" | "service" | "blog" | "custom", slug: string, item?: any): boolean => {
+    if (type === "service") return Boolean(item?.noindex);
+    if (type === "blog") return Boolean(item?.noindex);
+    if (type === "custom") return Boolean(item?.noindex);
+    return Boolean(
+      formData.page_noindex && (formData.page_noindex[slug] || (slug === "/" && formData.page_noindex["/"]))
+    );
+  };
+
+  const allWebsitePagesList = useMemo(() => {
+    const corePages = [
+      { id: "home", label: "Homepage", slug: "/", type: "core" as const, rawSlug: "/" },
+      { id: "about", label: "About Us", slug: "/about", type: "core" as const, rawSlug: "/about" },
+      { id: "services", label: "Services Hub", slug: "/services", type: "core" as const, rawSlug: "/services" },
+      { id: "portfolio", label: "Portfolio Gallery", slug: "/portfolio", type: "core" as const, rawSlug: "/portfolio" },
+      { id: "pricing", label: "Pricing Packages", slug: "/pricing", type: "core" as const, rawSlug: "/pricing" },
+      { id: "blog", label: "Blog & Guides Hub", slug: "/blog", type: "core" as const, rawSlug: "/blog" },
+      { id: "testimonials", label: "Author Testimonials", slug: "/testimonials", type: "core" as const, rawSlug: "/testimonials" },
+      { id: "contact", label: "Contact & Consultation", slug: "/contact", type: "core" as const, rawSlug: "/contact" },
+    ];
+    const services = allServicesList.map((s) => ({
+      id: `service:${s.slug}`,
+      label: s.title,
+      slug: `/services/${s.slug}`,
+      rawSlug: s.slug,
+      type: "service" as const,
+      item: s,
+    }));
+    const blogs = allBlogsList.map((b) => ({
+      id: `blog:${b.slug}`,
+      label: b.title,
+      slug: `/blog/${b.slug}`,
+      rawSlug: b.slug,
+      type: "blog" as const,
+      item: b,
+    }));
+    const custom = (formData.custom_pages || []).map((cp) => ({
+      id: `custom:${cp.slug}`,
+      label: cp.title,
+      slug: `/${cp.slug}`,
+      rawSlug: cp.slug,
+      type: "custom" as const,
+      item: cp,
+    }));
+    return [...corePages, ...services, ...blogs, ...custom];
+  }, [allServicesList, allBlogsList, formData.custom_pages]);
+
+  const handlePropagateMetaDefaults = () => {
+    const defaults = formData.global_meta_defaults || {
+      title_suffix: " | Beyond Book Publishing",
+      default_meta_desc:
+        "Beyond Book Publishing (BeyondBookpublishing.com) provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties.",
+      default_og_image:
+        "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=1200&h=630",
+    };
+    const suffix = defaults.title_suffix || " | Beyond Book Publishing";
+    let updatedCount = 0;
+
+    const newForm = { ...formData };
+    const coreKeys: Array<{ titleKey: keyof CMSData; descKey: keyof CMSData; fallbackTitle: string }> = [
+      {
+        titleKey: "seo_home_title",
+        descKey: "seo_home_desc",
+        fallbackTitle: "Beyond Book Publishing | Professional Ghostwriting, Editing & Book Publishing",
+      },
+      { titleKey: "seo_about_title", descKey: "seo_about_desc", fallbackTitle: "About Us" },
+      { titleKey: "seo_services_title", descKey: "seo_services_desc", fallbackTitle: "Publishing Services & Packages" },
+      { titleKey: "seo_portfolio_title", descKey: "seo_portfolio_desc", fallbackTitle: "Author Portfolio Gallery" },
+      { titleKey: "seo_pricing_title", descKey: "seo_pricing_desc", fallbackTitle: "Transparent Publishing Investment" },
+      { titleKey: "seo_blog_title", descKey: "seo_blog_desc", fallbackTitle: "Author Resource Center & Guides" },
+      { titleKey: "seo_testimonials_title", descKey: "seo_testimonials_desc", fallbackTitle: "Author Testimonials & Reviews" },
+      { titleKey: "seo_contact_title", descKey: "seo_contact_desc", fallbackTitle: "Request Free Publishing Consultation" },
+    ];
+
+    coreKeys.forEach(({ titleKey, descKey, fallbackTitle }) => {
+      const currentTitle = (newForm[titleKey] as string) || "";
+      if (!currentTitle.trim()) {
+        (newForm[titleKey] as string) = fallbackTitle.includes("Beyond Book")
+          ? fallbackTitle
+          : `${fallbackTitle}${suffix}`;
+        updatedCount++;
+      } else if (!currentTitle.includes("Beyond Book") && !currentTitle.endsWith(suffix)) {
+        (newForm[titleKey] as string) = `${currentTitle}${suffix}`;
+        updatedCount++;
+      }
+      const currentDesc = (newForm[descKey] as string) || "";
+      if (!currentDesc.trim()) {
+        (newForm[descKey] as string) = defaults.default_meta_desc || "";
+        updatedCount++;
+      }
+    });
+
+    const updatedServices = (newForm.services || []).map((s) => {
+      let changed = false;
+      let metaTitle = s.metaTitle || "";
+      let metaDesc = s.metaDesc || "";
+      if (!metaTitle.trim()) {
+        metaTitle = `${s.title}${suffix}`;
+        changed = true;
+      }
+      if (!metaDesc.trim()) {
+        metaDesc = `${s.title} - ${s.tagline}. Professional ${s.category.toLowerCase()} services at Beyond Book Publishing.`;
+        changed = true;
+      }
+      if (changed) updatedCount++;
+      return { ...s, metaTitle, metaDesc };
+    });
+    newForm.services = updatedServices;
+
+    const updatedBlogs = (newForm.blogs || []).map((b) => {
+      let changed = false;
+      let metaTitle = b.metaTitle || "";
+      let metaDesc = b.metaDesc || "";
+      if (!metaTitle.trim()) {
+        metaTitle = `${b.title}${suffix}`;
+        changed = true;
+      }
+      if (!metaDesc.trim()) {
+        metaDesc = b.excerpt || defaults.default_meta_desc || "";
+        changed = true;
+      }
+      if (changed) updatedCount++;
+      return { ...b, metaTitle, metaDesc };
+    });
+    newForm.blogs = updatedBlogs;
+
+    setFormData(newForm);
+    setPropagationFeedback(
+      `Propagated global defaults across ${updatedCount} meta fields and pages! Remember to click 'Save All SEO Settings'.`
+    );
+    setTimeout(() => setPropagationFeedback(null), 6000);
+  };
+
   // ================= IF NOT AUTHENTICATED: SHOW SECURE LOGIN SCREEN =================
   if (!isAuthenticated) {
     return (
@@ -1128,6 +1300,25 @@ export const AdminDashboard: React.FC = () => {
             <span>{liveVisitorCount} Live Online</span>
           </span>
 
+          {/* Firebase Firestore Cloud Database Live Indicator */}
+          {dbConnected ? (
+            <span
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-500/30"
+              title="Connected to Firebase Firestore Cloud Database (Permanent Storage)"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Firestore Live</span>
+            </span>
+          ) : (
+            <span
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-950/80 text-amber-300 border border-amber-500/30"
+              title="Syncing with Firebase Firestore Database..."
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span>Firestore Syncing</span>
+            </span>
+          )}
+
           {saveStatus === "saving" && (
             <span className="flex items-center gap-1.5 text-yellow-400">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -1182,7 +1373,7 @@ export const AdminDashboard: React.FC = () => {
               { id: "testimonials", label: "Testimonials", icon: <Star className="w-4 h-4" />, badge: formData.testimonials?.length },
               { id: "portfolio", label: "Portfolio Books", icon: <BookOpen className="w-4 h-4" />, badge: formData.portfolioBooks?.length },
               { id: "media", label: "Media & Images", icon: <ImageIcon className="w-4 h-4" /> },
-              { id: "seo", label: "SEO Options", icon: <Search className="w-4 h-4" /> },
+              { id: "seo", label: "SEO & Indexation", icon: <Search className="w-4 h-4" />, badge: formData.global_noindex !== false ? "NOINDEX" : undefined },
               { id: "contact", label: "Contact Details", icon: <Phone className="w-4 h-4" /> },
               { id: "leads", label: "Form Inquiries", icon: <Users className="w-4 h-4" />, badge: leads?.length },
               { id: "tools", label: "Security & Tools", icon: <Database className="w-4 h-4" /> },
@@ -4489,6 +4680,351 @@ export const AdminDashboard: React.FC = () => {
                 </button>
               </div>
 
+              {/* ================= 1. CENTRALIZED SITE-WIDE NO-INDEX CONTROL ================= */}
+              <div className={`rounded-xl border p-5 shadow-xs transition-all ${
+                formData.global_noindex !== false
+                  ? "bg-gradient-to-r from-red-950/20 via-rose-900/15 to-amber-950/20 border-red-300/80 bg-red-50/50"
+                  : "bg-gradient-to-r from-emerald-950/15 via-teal-900/10 to-blue-950/15 border-emerald-300/80 bg-emerald-50/40"
+              }`}>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                  <div className="flex items-start gap-3.5">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md ${
+                      formData.global_noindex !== false
+                        ? "bg-red-600 text-white"
+                        : "bg-emerald-600 text-white"
+                    }`}>
+                      {formData.global_noindex !== false ? (
+                        <ShieldAlert className="w-6 h-6 animate-pulse" />
+                      ) : (
+                        <ShieldCheck className="w-6 h-6" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-base font-serif font-black text-navy">
+                          {formData.global_noindex !== false
+                            ? "Site-Wide NO-INDEX Active (Search Engines Blocked)"
+                            : "Search Engine Indexing Allowed (Public Mode)"}
+                        </h2>
+                        <span className={`text-[10px] uppercase font-black px-2 py-0.5 rounded-full ${
+                          formData.global_noindex !== false
+                            ? "bg-red-100 text-red-800 border border-red-300"
+                            : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                        }`}>
+                          {formData.global_noindex !== false ? "Under Construction / Staging" : "Public Production"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                        {formData.global_noindex !== false
+                          ? "Puri website ko no-index kiya gaya hai. Every single core page, service, blog post, and custom page automatically emits <meta name=\"robots\" content=\"noindex, nofollow\" />. Web crawlers (Googlebot, Bing) are blocked until your content changes are 100% complete."
+                          : "Your website is publicly crawlable. Search engines are instructed to index and follow links according to individual page rules."}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-4 mt-2 text-[11px] font-mono text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <strong className="text-navy">Robots Tag:</strong>{" "}
+                          <code>{formData.global_noindex !== false ? "noindex, nofollow" : "index, follow (per-page)"}</code>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <strong className="text-navy">Robots.txt:</strong>{" "}
+                          <code>{formData.global_noindex !== false ? "Disallow: /" : "Allow: /"}</code>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <strong className="text-navy">Pages Covered:</strong>{" "}
+                          <span>{allWebsitePagesList.length} Total Pages</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleGlobalNoIndex(formData.global_noindex === false)}
+                      className={`px-4 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all ${
+                        formData.global_noindex !== false
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                          : "bg-red-600 hover:bg-red-700 text-white"
+                      }`}
+                    >
+                      {formData.global_noindex !== false ? (
+                        <>
+                          <ToggleRight className="w-4 h-4" />
+                          <span>Switch to Allow Indexing</span>
+                        </>
+                      ) : (
+                        <>
+                          <ToggleLeft className="w-4 h-4" />
+                          <span>No-Index Whole Website</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveAll()}
+                      className="bg-navy hover:bg-[#12163b] text-white text-xs font-bold px-3 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Save className="w-3.5 h-3.5 text-gold" />
+                      <span>Save Status</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= 2. GLOBAL METADATA DEFAULTS & PROPAGATION ================= */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h3 className="font-serif font-bold text-navy text-base flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-gold" />
+                      <span>Global Meta-Data Defaults &amp; Automatic Propagation</span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Configure default meta attributes that automatically propagate across all pages, services, and posts.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePropagateMetaDefaults}
+                    className="bg-navy hover:bg-gold hover:text-navy text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-gold" />
+                    <span>Propagate Defaults to All Pages</span>
+                  </button>
+                </div>
+
+                {propagationFeedback && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg font-medium flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>{propagationFeedback}</span>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">
+                      Global Title Suffix (Appended to All Page Titles)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.global_meta_defaults?.title_suffix || " | Beyond Book Publishing"}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          global_meta_defaults: {
+                            ...(prev.global_meta_defaults || {}),
+                            title_suffix: e.target.value,
+                          },
+                        }))
+                      }
+                      placeholder="e.g.  | Beyond Book Publishing"
+                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs font-semibold text-navy outline-none focus:border-[#2271b1]"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Automatically appends to pages if missing (e.g. "Services | Beyond Book Publishing").
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">
+                      Global Fallback Social Card Image (og:image / twitter:image)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.global_meta_defaults?.default_og_image || formData.og_image_url || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          og_image_url: e.target.value,
+                          global_meta_defaults: {
+                            ...(prev.global_meta_defaults || {}),
+                            default_og_image: e.target.value,
+                          },
+                        }))
+                      }
+                      placeholder="https://..."
+                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs text-navy outline-none focus:border-[#2271b1]"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Used when any page link is shared on social media, WhatsApp, or iMessage.
+                    </p>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block font-bold text-gray-700 mb-1">
+                      Global Fallback Meta Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={
+                        formData.global_meta_defaults?.default_meta_desc ||
+                        "Beyond Book Publishing (BeyondBookpublishing.com) provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties."
+                      }
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          global_meta_defaults: {
+                            ...(prev.global_meta_defaults || {}),
+                            default_meta_desc: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-2 text-xs text-gray-700 outline-none focus:border-[#2271b1]"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      Propagates automatically whenever a sub-page, service, or article does not have its own meta description.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= 3. CENTRALIZED PAGE-LEVEL INDEXATION DIRECTORY ================= */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h3 className="font-serif font-bold text-navy text-base flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-[#2271b1]" />
+                      <span>Page-Level Indexation Directory ({allWebsitePagesList.length} Total Pages)</span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Toggle noindex status on specific individual pages or inspect their live crawl directive.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Filter buttons */}
+                    <div className="flex items-center bg-gray-100 p-0.5 rounded-lg text-xs">
+                      {(["all", "core", "service", "blog", "custom"] as const).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setIndexationTypeFilter(t)}
+                          className={`px-2.5 py-1 rounded capitalize font-semibold transition-all cursor-pointer ${
+                            indexationTypeFilter === t
+                              ? "bg-white text-navy font-bold shadow-xs"
+                              : "text-gray-600 hover:text-navy"
+                          }`}
+                        >
+                          {t === "all" ? "All Pages" : t}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="relative w-48">
+                      <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={indexationDirectoryFilter}
+                        onChange={(e) => setIndexationDirectoryFilter(e.target.value)}
+                        placeholder="Search page..."
+                        className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-8 pr-2.5 py-1 text-xs text-navy outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Directory Table */}
+                <div className="overflow-x-auto max-h-72 border border-gray-200 rounded-lg">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-gray-100/90 text-navy uppercase tracking-wider text-[10px] font-bold sticky top-0 z-10 border-b border-gray-200">
+                      <tr>
+                        <th className="p-2.5">Page / Document</th>
+                        <th className="p-2.5">URL Path</th>
+                        <th className="p-2.5">Type</th>
+                        <th className="p-2.5">Effective Directive</th>
+                        <th className="p-2.5 text-right">Individual No-Index</th>
+                        <th className="p-2.5 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {allWebsitePagesList
+                        .filter((p) => {
+                          if (indexationTypeFilter !== "all" && p.type !== indexationTypeFilter) return false;
+                          if (
+                            indexationDirectoryFilter &&
+                            !p.label.toLowerCase().includes(indexationDirectoryFilter.toLowerCase()) &&
+                            !p.slug.toLowerCase().includes(indexationDirectoryFilter.toLowerCase())
+                          ) {
+                            return false;
+                          }
+                          return true;
+                        })
+                        .map((p) => {
+                          const directlyNoIndexed = isPageDirectlyNoIndexed(p.type, p.rawSlug, (p as any).item);
+                          const isSiteWideActive = formData.global_noindex !== false;
+                          const effectiveStatus = isSiteWideActive || directlyNoIndexed;
+
+                          return (
+                            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="p-2.5 font-bold text-navy">
+                                <span className="line-clamp-1">{p.label}</span>
+                              </td>
+                              <td className="p-2.5 font-mono text-gray-500 text-[11px]">
+                                {p.slug}
+                              </td>
+                              <td className="p-2.5">
+                                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
+                                  p.type === "core"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : p.type === "service"
+                                    ? "bg-amber-100 text-amber-800"
+                                    : p.type === "blog"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : "bg-emerald-100 text-emerald-800"
+                                }`}>
+                                  {p.type}
+                                </span>
+                              </td>
+                              <td className="p-2.5">
+                                {effectiveStatus ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+                                    <EyeOff className="w-3 h-3 text-red-500" />
+                                    <span>noindex, nofollow</span>
+                                    {isSiteWideActive && !directlyNoIndexed && (
+                                      <span className="text-[9px] text-red-500">(site-wide)</span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                                    <Eye className="w-3 h-3 text-emerald-600" />
+                                    <span>index, follow</span>
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-2.5 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => handleTogglePageNoIndex(p.type, p.rawSlug, !directlyNoIndexed)}
+                                  className={`px-2 py-1 text-[11px] rounded font-bold cursor-pointer transition-all ${
+                                    directlyNoIndexed
+                                      ? "bg-red-600 text-white shadow-xs"
+                                      : "bg-gray-150 text-gray-700 hover:bg-gray-200"
+                                  }`}
+                                  title={directlyNoIndexed ? "Click to allow indexing" : "Click to noindex this page"}
+                                >
+                                  {directlyNoIndexed ? "No-Indexed" : "Indexed"}
+                                </button>
+                              </td>
+                              <td className="p-2.5 text-right space-x-1 whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSeoActivePage(p.id);
+                                    const editorElement = document.getElementById("seo-page-editor-section");
+                                    if (editorElement) editorElement.scrollIntoView({ behavior: "smooth" });
+                                  }}
+                                  className="text-[11px] text-[#2271b1] hover:underline font-bold cursor-pointer"
+                                >
+                                  Configure SEO
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               {/* Page, Service & Blog Selector */}
               <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
@@ -4725,7 +5261,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {/* Selected Page / Service / Blog SEO Fields */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs space-y-5">
+              <div id="seo-page-editor-section" className="bg-white rounded-xl border border-gray-200 p-6 shadow-xs space-y-5">
                 <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                   <div>
                     <h3 className="font-serif font-bold text-navy text-lg">
@@ -4755,6 +5291,108 @@ export const AdminDashboard: React.FC = () => {
                       <ExternalLink className="w-3 h-3" />
                     </Link>
                   </div>
+                </div>
+
+                {/* Page Indexation Directive (Robots Meta Tag) */}
+                <div className={`p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  formData.global_noindex !== false ||
+                  (currentSeoPageData.isService && currentSeoPageData.service?.noindex) ||
+                  (currentSeoPageData.isBlog && currentSeoPageData.blog?.noindex) ||
+                  (currentSeoPageData.isCustomPage && currentSeoPageData.customPage?.noindex) ||
+                  (!currentSeoPageData.isService && !currentSeoPageData.isBlog && !currentSeoPageData.isCustomPage && formData.page_noindex?.[currentSeoPageData.slug])
+                    ? "bg-red-50/70 border-red-200"
+                    : "bg-emerald-50/60 border-emerald-200"
+                }`}>
+                  <div className="flex items-start gap-2.5">
+                    <div className="mt-0.5">
+                      {formData.global_noindex !== false ||
+                      (currentSeoPageData.isService && currentSeoPageData.service?.noindex) ||
+                      (currentSeoPageData.isBlog && currentSeoPageData.blog?.noindex) ||
+                      (currentSeoPageData.isCustomPage && currentSeoPageData.customPage?.noindex) ||
+                      (!currentSeoPageData.isService && !currentSeoPageData.isBlog && !currentSeoPageData.isCustomPage && formData.page_noindex?.[currentSeoPageData.slug]) ? (
+                        <EyeOff className="w-4 h-4 text-red-600" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-emerald-600" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-navy flex items-center gap-1.5">
+                        <span>Search Indexing Directive for this Page:</span>
+                        <code className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-white border border-gray-200">
+                          {formData.global_noindex !== false
+                            ? "noindex, nofollow (Site-Wide Active)"
+                            : (currentSeoPageData.isService && currentSeoPageData.service?.noindex) ||
+                              (currentSeoPageData.isBlog && currentSeoPageData.blog?.noindex) ||
+                              (currentSeoPageData.isCustomPage && currentSeoPageData.customPage?.noindex) ||
+                              (!currentSeoPageData.isService && !currentSeoPageData.isBlog && !currentSeoPageData.isCustomPage && formData.page_noindex?.[currentSeoPageData.slug])
+                            ? "noindex, nofollow (Individual Override)"
+                            : "index, follow (Searchable)"}
+                        </code>
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {formData.global_noindex !== false
+                          ? "⚠️ Site-Wide No-Index is active. Search engines will not index this page while site is under construction."
+                          : "Configure whether search engines should index and rank this specific page."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (currentSeoPageData.isService && currentSeoPageData.serviceSlug) {
+                        updateServiceField(
+                          currentSeoPageData.serviceSlug,
+                          "noindex",
+                          !currentSeoPageData.service?.noindex
+                        );
+                      } else if (currentSeoPageData.isBlog && currentSeoPageData.blogSlug) {
+                        updateBlogField(
+                          currentSeoPageData.blogSlug,
+                          "noindex",
+                          !currentSeoPageData.blog?.noindex
+                        );
+                      } else if (currentSeoPageData.isCustomPage && currentSeoPageData.customPageSlug) {
+                        updateCustomPageField(
+                          currentSeoPageData.customPageSlug,
+                          "noindex",
+                          !currentSeoPageData.customPage?.noindex
+                        );
+                      } else {
+                        const currentVal = Boolean(formData.page_noindex?.[currentSeoPageData.slug]);
+                        setFormData((prev) => ({
+                          ...prev,
+                          page_noindex: {
+                            ...(prev.page_noindex || {}),
+                            [currentSeoPageData.slug]: !currentVal,
+                          },
+                        }));
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all ${
+                      (currentSeoPageData.isService && currentSeoPageData.service?.noindex) ||
+                      (currentSeoPageData.isBlog && currentSeoPageData.blog?.noindex) ||
+                      (currentSeoPageData.isCustomPage && currentSeoPageData.customPage?.noindex) ||
+                      (!currentSeoPageData.isService && !currentSeoPageData.isBlog && !currentSeoPageData.isCustomPage && formData.page_noindex?.[currentSeoPageData.slug])
+                        ? "bg-red-600 hover:bg-red-700 text-white shadow-xs"
+                        : "bg-gray-200 hover:bg-gray-300 text-navy"
+                    }`}
+                  >
+                    {(currentSeoPageData.isService && currentSeoPageData.service?.noindex) ||
+                    (currentSeoPageData.isBlog && currentSeoPageData.blog?.noindex) ||
+                    (currentSeoPageData.isCustomPage && currentSeoPageData.customPage?.noindex) ||
+                    (!currentSeoPageData.isService && !currentSeoPageData.isBlog && !currentSeoPageData.isCustomPage && formData.page_noindex?.[currentSeoPageData.slug]) ? (
+                      <>
+                        <EyeOff className="w-3.5 h-3.5" />
+                        <span>Individual No-Index (Active)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Mark as No-Index</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 <div className="space-y-1.5">

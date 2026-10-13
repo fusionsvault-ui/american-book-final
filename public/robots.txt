@@ -2,9 +2,7 @@
 # Domain: https://beyondbookpublishing.com
 
 User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /api/
+Disallow: /
 
 # Sitemaps
 Sitemap: https://beyondbookpublishing.com/sitemap.xml

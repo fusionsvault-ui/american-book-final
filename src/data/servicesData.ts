@@ -20,6 +20,7 @@ export interface ServiceItem {
   metaDesc?: string;
   focusKeywords?: string;
   schemaMarkup?: string;
+  noindex?: boolean;
   gallery: string[];
   description: string;
   benefits: string[];

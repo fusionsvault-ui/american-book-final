@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "CmsConfig": {
+      "title": "CmsConfig",
+      "description": "Global website CMS content, blogs, custom pages, services, and SEO settings",
+      "type": "object",
+      "properties": {
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Email or identifier of updater",
+          "maxLength": 128
+        },
+        "global_noindex": {
+          "type": "boolean",
+          "description": "Whether site-wide noindex is active"
+        },
+        "global_nofollow": {
+          "type": "boolean",
+          "description": "Whether site-wide nofollow is active"
+        },
+        "custom_robots_txt": {
+          "type": "string",
+          "description": "Robots.txt directives",
+          "maxLength": 5000
+        },
+        "seo_home_title": {
+          "type": "string",
+          "description": "Home title",
+          "maxLength": 250
+        },
+        "seo_home_desc": {
+          "type": "string",
+          "description": "Home description",
+          "maxLength": 1000
+        }
+      }
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Contact form submissions and book consultation requests",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Name of author or prospect",
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address",
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number",
+          "maxLength": 50
+        },
+        "service": {
+          "type": "string",
+          "description": "Requested publishing service",
+          "maxLength": 100
+        },
+        "message": {
+          "type": "string",
+          "description": "Manuscript description or inquiry details",
+          "maxLength": 5000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of inquiry"
+        },
+        "status": {
+          "type": "string",
+          "description": "Lead processing status",
+          "enum": ["new", "contacted", "converted", "archived"]
+        }
+      },
+      "required": ["fullName", "email"]
+    },
+    "VisitorSession": {
+      "title": "VisitorSession",
+      "description": "Live visitor presence and chat tracking",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session ID",
+          "maxLength": 128
+        },
+        "visitorName": {
+          "type": "string",
+          "description": "Visitor name or label",
+          "maxLength": 100
+        },
+        "visitorEmail": {
+          "type": "string",
+          "description": "Visitor email",
+          "maxLength": 120
+        },
+        "currentUrl": {
+          "type": "string",
+          "description": "Current webpage URL",
+          "maxLength": 300
+        },
+        "lastSeen": {
+          "type": "string",
+          "description": "Last activity timestamp"
+        }
+      },
+      "required": ["sessionId"]
+    }
+  },
+  "firestore": {
+    "/cms/{cmsId}": {
+      "schema": "CmsConfig",
+      "description": "Site content, dynamic blogs, custom pages, and SEO configuration documents"
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Inbound author leads and contact inquiries"
+    },
+    "/visitor_sessions/{sessionId}": {
+      "schema": "VisitorSession",
+      "description": "Real-time visitor heartbeats and session metadata"
+    }
+  }
+}

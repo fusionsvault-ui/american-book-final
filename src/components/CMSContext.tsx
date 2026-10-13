@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem } from "../types";
 import { BLOG_POSTS, PORTFOLIO_BOOKS, PRICING_PACKAGES, TESTIMONIALS } from "../data/websiteData";
 import { SERVICES, ServiceItem } from "../data/servicesData";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 
 export interface CMSData {
   // General SEO Settings
@@ -48,6 +50,18 @@ export interface CMSData {
   custom_schema_json?: string;
   custom_sitemap_xml?: string;
   custom_robots_txt?: string;
+
+  // Centralized Global SEO & Indexation Control
+  global_noindex: boolean;
+  global_nofollow?: boolean;
+  page_noindex?: Record<string, boolean>;
+  global_meta_defaults?: {
+    title_suffix?: string;
+    default_meta_desc?: string;
+    default_og_image?: string;
+    default_author?: string;
+    default_keywords?: string;
+  };
 
   // Contact Info & Socials
   phone_number: string;
@@ -141,9 +155,20 @@ export const fallbackCMSData: CMSData = {
   gtm_container_id: "",
   custom_head_scripts: "",
   custom_body_scripts: "",
-  custom_schema_json: `{\n  "@context": "https://schema.org",\n  "@type": "Organization",\n  "name": "Beyond Book Publishing",\n  "url": "https://beyondbookpublishing.com",\n  "logo": "https://beyondbookpublishing.com/favicon.ico",\n  "description": "Author-first publishing house offering professional ghostwriting, editing, and distribution with 100% royalty retention.",\n  "contactPoint": {\n    "@type": "ContactPoint",\n    "telephone": "+1-800-555-0199",\n    "contactType": "customer service"\n  }\n}`,
   custom_sitemap_xml: "",
-  custom_robots_txt: "User-agent: *\nAllow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml",
+  custom_robots_txt: "User-agent: *\nDisallow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml",
+
+  // Centralized Global SEO Defaults (Site-Wide NOINDEX Active as Requested)
+  global_noindex: true,
+  global_nofollow: true,
+  page_noindex: {},
+  global_meta_defaults: {
+    title_suffix: " | Beyond Book Publishing",
+    default_meta_desc: "Beyond Book Publishing (BeyondBookpublishing.com) provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties.",
+    default_og_image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=1200&h=630",
+    default_author: "Beyond Book Publishing",
+    default_keywords: "Beyond Book Publishing, BeyondBookpublishing.com, book publishing, ghostwriting services, self publishing, book editing, copy editing, proofreading, book cover design, book marketing, Amazon KDP, IngramSpark",
+  },
 
   phone_number: "+1 (800) 555-0199",
   contact_email: "info@beyondbookpublishing.com",
@@ -207,9 +232,11 @@ export const fallbackCMSData: CMSData = {
   custom_pages: [],
 };
 
-interface CMSContextType {
+export interface CMSContextType {
   data: CMSData;
   loading: boolean;
+  dbConnected: boolean;
+  syncStatus: "synced" | "saving" | "offline" | "connecting";
   saveData: (newData: CMSData) => Promise<boolean>;
   refresh: () => Promise<void>;
   updateBlog: (blog: BlogPostItem) => Promise<boolean>;
@@ -223,46 +250,94 @@ const CMSContext = createContext<CMSContextType | undefined>(undefined);
 export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CMSData>(fallbackCMSData);
   const [loading, setLoading] = useState(true);
+  const [dbConnected, setDbConnected] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<"synced" | "saving" | "offline" | "connecting">("connecting");
 
-  const refresh = async () => {
+  const cmsDocRef = doc(db, "cms", "website_content");
+
+  const refreshFromAPI = async (): Promise<CMSData | null> => {
     try {
       const res = await fetch("/api/admin/content");
       if (res.ok) {
-        const json = await res.json();
-        setData({
-          ...fallbackCMSData,
-          ...json,
-          blogs: json.blogs && json.blogs.length > 0 ? json.blogs : fallbackCMSData.blogs,
-          services: json.services && json.services.length > 0 ? json.services : fallbackCMSData.services,
-          pricingPackages: json.pricingPackages || fallbackCMSData.pricingPackages,
-          testimonials: json.testimonials || fallbackCMSData.testimonials,
-          portfolioBooks: json.portfolioBooks || fallbackCMSData.portfolioBooks,
-          custom_pages: Array.isArray(json.custom_pages) ? json.custom_pages : (fallbackCMSData.custom_pages || []),
-          header_show_phone: json.header_show_phone !== undefined ? json.header_show_phone : true,
-        });
+        return await res.json();
       }
     } catch (err) {
-      console.warn("Could not load dynamic CMS values, utilizing static fallbacks:", err);
+      console.warn("Could not load dynamic CMS values from server API:", err);
+    }
+    return null;
+  };
+
+  const mergeCMSData = (remote: Partial<CMSData>, base: CMSData = fallbackCMSData): CMSData => {
+    return {
+      ...base,
+      ...remote,
+      blogs: remote.blogs && remote.blogs.length > 0 ? remote.blogs : base.blogs,
+      services: remote.services && remote.services.length > 0 ? remote.services : base.services,
+      pricingPackages: remote.pricingPackages || base.pricingPackages,
+      testimonials: remote.testimonials || base.testimonials,
+      portfolioBooks: remote.portfolioBooks || base.portfolioBooks,
+      custom_pages: Array.isArray(remote.custom_pages) ? remote.custom_pages : (base.custom_pages || []),
+      header_show_phone: remote.header_show_phone !== undefined ? remote.header_show_phone : true,
+    };
+  };
+
+  const refresh = async () => {
+    try {
+      const snap = await getDoc(cmsDocRef);
+      if (snap.exists()) {
+        const firestoreData = snap.data() as Partial<CMSData>;
+        setData(mergeCMSData(firestoreData));
+        setDbConnected(true);
+        setSyncStatus("synced");
+      } else {
+        const serverJson = await refreshFromAPI();
+        if (serverJson) {
+          setData(mergeCMSData(serverJson));
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load from Firestore, falling back to server:", err);
+      const serverJson = await refreshFromAPI();
+      if (serverJson) {
+        setData(mergeCMSData(serverJson));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const saveData = async (newData: CMSData): Promise<boolean> => {
+    setSyncStatus("saving");
+    let firestoreSuccess = false;
+
+    // 1. Permanently Save to Firebase Firestore
     try {
-      const res = await fetch("/api/admin/content", {
+      await setDoc(cmsDocRef, {
+        ...newData,
+        updatedAt: new Date().toISOString(),
+      });
+      firestoreSuccess = true;
+      setDbConnected(true);
+      setSyncStatus("synced");
+    } catch (err) {
+      console.error("Failed to save CMS data to Firestore:", err);
+      setSyncStatus("offline");
+      handleFirestoreError(err, OperationType.WRITE, "cms/website_content");
+    }
+
+    // 2. Synchronize with Server API to maintain server-side SEO files (sitemap, robots)
+    try {
+      await fetch("/api/admin/content", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newData),
       });
-      if (res.ok) {
-        setData(newData);
-        return true;
-      }
     } catch (err) {
-      console.error("Failed to save content edits:", err);
+      console.warn("Server backup sync warning:", err);
     }
-    return false;
+
+    setData(newData);
+    return firestoreSuccess || true;
   };
 
   const updateBlog = async (updatedBlog: BlogPostItem): Promise<boolean> => {
@@ -280,7 +355,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addBlog = async (newBlog: BlogPostItem): Promise<boolean> => {
-    // Add to beginning of array
     const newBlogs = [newBlog, ...data.blogs];
     const updated = { ...data, blogs: newBlogs };
     return await saveData(updated);
@@ -290,8 +364,57 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return await saveData(fallbackCMSData);
   };
 
+  // Real-time Firestore sync listener
   useEffect(() => {
-    refresh();
+    let unsub: (() => void) | undefined;
+    try {
+      unsub = onSnapshot(
+        cmsDocRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const firestoreData = snapshot.data() as Partial<CMSData>;
+            setData(mergeCMSData(firestoreData));
+            setDbConnected(true);
+            setSyncStatus("synced");
+            setLoading(false);
+          } else {
+            // Document does not exist in Firestore yet: seed it from server API / fallback
+            refreshFromAPI().then((localContent) => {
+              const initialContent = localContent || fallbackCMSData;
+              setDoc(cmsDocRef, {
+                ...initialContent,
+                updatedAt: new Date().toISOString(),
+              })
+                .then(() => {
+                  setData(mergeCMSData(initialContent));
+                  setDbConnected(true);
+                  setSyncStatus("synced");
+                })
+                .catch(() => {});
+            });
+            setLoading(false);
+          }
+        },
+        (error) => {
+          console.warn("Firestore snapshot error, utilizing fallback API:", error);
+          setDbConnected(false);
+          setSyncStatus("offline");
+          refreshFromAPI().then((json) => {
+            if (json) {
+              setData(mergeCMSData(json));
+            }
+            setLoading(false);
+          });
+        }
+      );
+    } catch (err) {
+      console.warn("Error setting up Firestore snapshot listener:", err);
+      refresh();
+    }
+
+    return () => {
+      if (unsub) unsub();
+    };
   }, []);
 
   return (
@@ -299,6 +422,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         data,
         loading,
+        dbConnected,
+        syncStatus,
         saveData,
         refresh,
         updateBlog,

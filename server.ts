@@ -3,6 +3,16 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import { initializeApp as initFirebaseApp } from "firebase/app";
+import {
+  getFirestore as getFirebaseFirestore,
+  doc as fsDoc,
+  getDoc as fsGetDoc,
+  setDoc as fsSetDoc,
+  collection as fsCollection,
+  getDocs as fsGetDocs,
+  deleteDoc as fsDeleteDoc,
+} from "firebase/firestore";
 
 dotenv.config();
 
@@ -93,6 +103,23 @@ const connectMongoDB = async () => {
   }
 };
 
+// FIREBASE FIRESTORE CLOUD DATABASE INTEGRATION
+let firestoreDb: any = null;
+let firebaseConnected = false;
+
+try {
+  const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
+  if (fs.existsSync(firebaseConfigPath)) {
+    const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
+    const fbApp = initFirebaseApp(firebaseConfig, "server_app");
+    firestoreDb = getFirebaseFirestore(fbApp, firebaseConfig.firestoreDatabaseId);
+    firebaseConnected = true;
+    console.log(`[FIREBASE FIRESTORE] Connected server instance to ${firebaseConfig.firestoreDatabaseId}`);
+  }
+} catch (fbErr) {
+  console.warn("[FIREBASE FIRESTORE] Server initialization warning:", fbErr);
+}
+
 // In-Memory & Persistent Database logs (using local JSON files for local/fallback persistence!)
 const LEADS_FILE = path.join(process.cwd(), "leads.json");
 const CHATS_FILE = path.join(process.cwd(), "chat-messages.json");
@@ -154,6 +181,17 @@ const fallbackCMSData = {
   logo_img_alt: "Beyond Book Publishing Premium Logo",
   header_phone: "",
   header_show_phone: false,
+  global_noindex: true,
+  global_nofollow: true,
+  page_noindex: {},
+  custom_robots_txt: "User-agent: *\nDisallow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml",
+  global_meta_defaults: {
+    title_suffix: " | Beyond Book Publishing",
+    default_meta_desc: "Beyond Book Publishing (BeyondBookpublishing.com) provides premier book publishing, ghostwriting, editorial, design, and marketing services. Retain 100% royalties.",
+    default_og_image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=1200&h=630",
+    default_author: "Beyond Book Publishing",
+    default_keywords: "Beyond Book Publishing, BeyondBookpublishing.com, book publishing, ghostwriting services, self publishing, book editing, copy editing, proofreading, book cover design, book marketing, Amazon KDP, IngramSpark",
+  },
   custom_pages: [],
 };
 
@@ -166,6 +204,28 @@ try {
   }
 } catch (e) {
   console.error("[CMS DB] Error loading/initializing cms_content.json:", e);
+}
+
+// Initial Live Sync with Firebase Firestore on Boot
+if (firestoreDb) {
+  (async () => {
+    try {
+      const snap = await fsGetDoc(fsDoc(firestoreDb, "cms", "website_content"));
+      if (snap.exists()) {
+        const liveData = snap.data();
+        cmsContent = { ...cmsContent, ...liveData };
+        console.log("[FIREBASE FIRESTORE] Synced live CMS configurations from Firestore.");
+      } else {
+        await fsSetDoc(fsDoc(firestoreDb, "cms", "website_content"), {
+          ...cmsContent,
+          updatedAt: new Date().toISOString(),
+        });
+        console.log("[FIREBASE FIRESTORE] Initialized website_content in Firestore.");
+      }
+    } catch (e) {
+      console.warn("[FIREBASE FIRESTORE] Startup sync warning:", e);
+    }
+  })();
 }
 
 // ADMIN Authentication API Endpoint
@@ -206,6 +266,19 @@ app.post("/api/admin/login", async (req, res) => {
 
 // ADMIN Content CMS API Endpoints
 app.get("/api/admin/content", async (req, res) => {
+  if (firestoreDb) {
+    try {
+      const snap = await fsGetDoc(fsDoc(firestoreDb, "cms", "website_content"));
+      if (snap.exists()) {
+        const liveData = snap.data();
+        cmsContent = { ...cmsContent, ...liveData };
+        return res.json(liveData);
+      }
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error fetching CMS content:", err);
+    }
+  }
+
   if (mongoConnected) {
     try {
       const record = await CMSModel.findOne({ key: "website_cms" });
@@ -226,28 +299,39 @@ app.get("/api/admin/content", async (req, res) => {
 
 app.post("/api/admin/content", async (req, res) => {
   const updatedData = req.body;
+  cmsContent = { ...cmsContent, ...updatedData };
+
+  // 1. Permanently Save to Cloud Firebase Firestore
+  if (firestoreDb) {
+    try {
+      await fsSetDoc(fsDoc(firestoreDb, "cms", "website_content"), {
+        ...cmsContent,
+        updatedAt: new Date().toISOString(),
+      });
+      console.log("[FIREBASE FIRESTORE] Successfully saved CMS data permanently to Firestore.");
+    } catch (err) {
+      console.error("[FIREBASE FIRESTORE] Error saving CMS content to Firestore:", err);
+    }
+  }
+
+  // 2. Save to Mongo if connected
   if (mongoConnected) {
     try {
       let record = await CMSModel.findOne({ key: "website_cms" });
       if (record) {
         record.data = { ...record.data, ...updatedData };
-        // Mark as modified so Mongoose updates mixed-type field
         record.markModified("data");
         await record.save();
-        return res.json({ success: true, data: record.data });
       } else {
         const dummyRecord = new CMSModel({ key: "website_cms", data: { ...cmsContent, ...updatedData } });
         await dummyRecord.save();
-        return res.json({ success: true, data: dummyRecord.data });
       }
     } catch (err) {
       console.error("[CMS DB] Error saving CMS content to Mongo:", err);
-      return res.status(500).json({ error: "Failed to save CMS configurations to MongoDB" });
     }
   }
 
-  // Fallback to local file persistence
-  cmsContent = { ...cmsContent, ...updatedData };
+  // 3. Fallback to local file persistence & sync sitemap / robots
   try {
     fs.writeFileSync(CMS_FILE, JSON.stringify(cmsContent, null, 2), "utf-8");
     if (updatedData.custom_sitemap_xml) {
@@ -258,9 +342,9 @@ app.post("/api/admin/content", async (req, res) => {
     }
   } catch (e) {
     console.error("[CMS DB] Failed writing cms_content.json / SEO files:", e);
-    return res.status(500).json({ error: "Failed to persist CMS configurations" });
   }
-  return res.json({ success: true });
+
+  return res.json({ success: true, data: cmsContent });
 });
 
 // Dynamic SEO Sitemap Endpoint
@@ -279,6 +363,13 @@ app.get("/sitemap.xml", (req, res) => {
 // Dynamic Robots.txt Endpoint
 app.get("/robots.txt", (req, res) => {
   res.setHeader("Content-Type", "text/plain");
+  // If site-wide noindex is enabled (default active)
+  if (cmsContent.global_noindex !== false) {
+    if (cmsContent.custom_robots_txt && cmsContent.custom_robots_txt.includes("Disallow:")) {
+      return res.send(cmsContent.custom_robots_txt);
+    }
+    return res.send(`# robots.txt for Beyond Book Publishing\n# Under Staging/Pre-launch: Site-wide crawling disabled per admin configuration\nUser-agent: *\nDisallow: /\n\nSitemap: https://beyondbookpublishing.com/sitemap.xml\n`);
+  }
   if (cmsContent.custom_robots_txt) {
     return res.send(cmsContent.custom_robots_txt);
   }
@@ -286,7 +377,7 @@ app.get("/robots.txt", (req, res) => {
   if (fs.existsSync(defaultPath)) {
     return res.send(fs.readFileSync(defaultPath, "utf-8"));
   }
-  return res.send(`User-agent: *\nAllow: /\nSitemap: https://beyondbookpublishing.com/sitemap.xml`);
+  return res.send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://beyondbookpublishing.com/sitemap.xml`);
 });
 
 // Google Search Console HTML File Verification Wildcard
@@ -298,6 +389,18 @@ app.get("/google:verificationCode.html", (req, res) => {
 
 // GET CRM leads
 app.get("/api/leads", async (req, res) => {
+  if (firestoreDb) {
+    try {
+      const snap = await fsGetDocs(fsCollection(firestoreDb, "leads"));
+      if (!snap.empty) {
+        const liveLeads = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+        return res.json(liveLeads);
+      }
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error reading leads from Firestore:", err);
+    }
+  }
+
   if (mongoConnected) {
     try {
       const mongoLeads = await LeadModel.find().sort({ createdAt: -1 });
@@ -312,6 +415,16 @@ app.get("/api/leads", async (req, res) => {
 // DELETE CRM lead
 app.delete("/api/leads/:id", async (req, res) => {
   const { id } = req.params;
+
+  if (firestoreDb) {
+    try {
+      await fsDeleteDoc(fsDoc(firestoreDb, "leads", id));
+      console.log("[FIREBASE FIRESTORE] Deleted lead from Firestore:", id);
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error deleting lead from Firestore:", err);
+    }
+  }
+
   if (mongoConnected) {
     try {
       await LeadModel.deleteOne({ id: id });
@@ -664,6 +777,16 @@ app.post("/api/leads", async (req, res) => {
     source: source || "unknown",
     timestamp: new Date().toISOString(),
   };
+
+  // 1. Permanently Save to Cloud Firebase Firestore
+  if (firestoreDb) {
+    try {
+      await fsSetDoc(fsDoc(firestoreDb, "leads", leadId), leadData);
+      console.log(`[FIREBASE FIRESTORE] Successfully saved lead ${leadId} to Firestore.`);
+    } catch (err) {
+      console.error("[FIREBASE FIRESTORE] Error saving lead to Firestore:", err);
+    }
+  }
 
   if (mongoConnected) {
     try {

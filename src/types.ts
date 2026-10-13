@@ -21,6 +21,7 @@ export interface ServiceItem {
   metaDesc?: string;
   focusKeywords?: string;
   schemaMarkup?: string;
+  noindex?: boolean;
   gallery: string[];
   description: string;
   benefits: string[];
@@ -86,6 +87,7 @@ export interface BlogPostItem {
   metaDesc?: string;
   focusKeywords?: string;
   schemaMarkup?: string;
+  noindex?: boolean;
   tags?: string[];
 }
 
@@ -102,6 +104,7 @@ export interface CustomPageItem {
   metaDesc?: string;
   focusKeywords?: string;
   schemaMarkup?: string;
+  noindex?: boolean;
   showInHeaderNav?: boolean;
   showInFooter?: boolean;
   createdAt?: string;
