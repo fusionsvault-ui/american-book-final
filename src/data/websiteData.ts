@@ -32,12 +32,12 @@ export const TESTIMONIALS: TestimonialItem[] = [
 ];
 
 export const FEATURED_AUTHORS: AuthorItem[] = [
-  { name: "James Carter", genre: "Thriller & Suspense", img: "/author-1.png" },
-  { name: "Amara Williams", genre: "Contemporary Romance", img: "/author-2.png" },
-  { name: "David Chen", genre: "Hard Sci-Fi & Speculative", img: "/author-3.png" },
-  { name: "Linda Foster", genre: "Memoir & Biography", img: "/author-4.png" },
-  { name: "Carlos Rivera", genre: "Business & Leadership", img: "/author-5.png" },
-  { name: "Yuki Tanaka", genre: "Literary Fiction", img: "/author-6.png" }
+  { name: "James Carter", genre: "Thriller & Suspense", img: "/author-1.webp" },
+  { name: "Amara Williams", genre: "Contemporary Romance", img: "/author-2.webp" },
+  { name: "David Chen", genre: "Hard Sci-Fi & Speculative", img: "/author-3.webp" },
+  { name: "Linda Foster", genre: "Memoir & Biography", img: "/author-4.webp" },
+  { name: "Carlos Rivera", genre: "Business & Leadership", img: "/author-5.webp" },
+  { name: "Yuki Tanaka", genre: "Literary Fiction", img: "/author-6.webp" }
 ];
 
 export const TEAM_MEMBERS: TeamMemberItem[] = [

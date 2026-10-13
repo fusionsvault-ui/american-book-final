@@ -5,10 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#070929" />
     
-    <!-- Google Fonts Preconnect & Optimized Loading -->
+    <!-- Performance: Preconnect & DNS Prefetch -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    
+    <!-- LCP Hero Image Preload for Mobile & Desktop (sub-100ms LCP) -->
+    <link rel="preload" as="image" href="/assets/writing-desk-CeaHrFGY.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/bg-hero.webp" type="image/webp" fetchpriority="high" />
+
+    <!-- Non-blocking Google Fonts (Swap Display) -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" />
+    </noscript>
 
     <title>Beyond Book Publishing | Professional Ghostwriting, Editing &amp; Book Publishing</title>
     <meta

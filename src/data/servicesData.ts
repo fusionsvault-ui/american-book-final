@@ -38,12 +38,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Ghost Writing",
     "tagline": "Your story, written by experts.",
     "category": "Book Writing",
-    "img": "/service-ghostwriting.jpg",
+    "img": "/service-ghostwriting.webp",
     "gallery": [
-      "/service-ghostwriting.jpg",
-      "/gal-ghost-2.jpg",
-      "/gal-ghost-3.jpg",
-      "/svc-book-writing.jpg"
+      "/service-ghostwriting.webp",
+      "/gal-ghost-2.webp",
+      "/gal-ghost-3.webp",
+      "/svc-book-writing.webp"
     ],
     "description": "Our professional ghostwriters capture your voice and bring your ideas to life. From concept to final manuscript, we handle every aspect of the writing process while you retain full authorship and 100% of your royalties.",
     "benefits": [
@@ -128,12 +128,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Writing",
     "tagline": "From blank page to published author.",
     "category": "Book Writing",
-    "img": "/svc-book-writing.jpg",
+    "img": "/svc-book-writing.webp",
     "gallery": [
-      "/svc-book-writing.jpg",
-      "/gal-bookwrite-2.jpg",
-      "/gal-bookwrite-3.jpg",
-      "/service-ghostwriting.jpg"
+      "/svc-book-writing.webp",
+      "/gal-bookwrite-2.webp",
+      "/gal-bookwrite-3.webp",
+      "/service-ghostwriting.webp"
     ],
     "description": "Whether you have a detailed outline or just a spark of an idea, our book writing service takes your concept and transforms it into a compelling, publish-ready manuscript that resonates with readers.",
     "benefits": [
@@ -218,12 +218,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Memoir Writing",
     "tagline": "Preserve your legacy in print.",
     "category": "Book Writing",
-    "img": "/svc-memoir.jpg",
+    "img": "/svc-memoir.webp",
     "gallery": [
-      "/svc-memoir.jpg",
-      "/gal-memoir-2.jpg",
-      "/gal-memoir-3.jpg",
-      "/service-ghostwriting.jpg"
+      "/svc-memoir.webp",
+      "/gal-memoir-2.webp",
+      "/gal-memoir-3.webp",
+      "/service-ghostwriting.webp"
     ],
     "description": "Your life story deserves to be told with authenticity and emotion. Our memoir writers conduct in-depth interviews and weave your experiences into a compelling narrative that moves readers and preserves your legacy.",
     "benefits": [
@@ -308,12 +308,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Biography Writing",
     "tagline": "Tell the story of an extraordinary life.",
     "category": "Book Writing",
-    "img": "/svc-biography.jpg",
+    "img": "/svc-biography.webp",
     "gallery": [
-      "/svc-biography.jpg",
-      "/gal-bio-2.jpg",
-      "/gal-bio-3.jpg",
-      "/svc-memoir.jpg"
+      "/svc-biography.webp",
+      "/gal-bio-2.webp",
+      "/gal-bio-3.webp",
+      "/svc-memoir.webp"
     ],
     "description": "Our biography writers craft detailed, factual, and compelling accounts of real lives - from historical figures to business leaders and celebrities. We research deeply and write narratives that inspire and inform.",
     "benefits": [
@@ -498,12 +498,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Proofreading",
     "tagline": "Catch every error before it reaches readers.",
     "category": "Book Editing",
-    "img": "/service-editing.jpg",
+    "img": "/service-editing.webp",
     "gallery": [
-      "/service-editing.jpg",
-      "/gal-proof-2.jpg",
-      "/gal-proof-3.jpg",
-      "/gal-copyedit-2.jpg"
+      "/service-editing.webp",
+      "/gal-proof-2.webp",
+      "/gal-proof-3.webp",
+      "/gal-copyedit-2.webp"
     ],
     "description": "Our meticulous proofreaders catch spelling, grammar, punctuation, and formatting errors that slip past even experienced writers. Every manuscript deserves a final expert pass before publication.",
     "benefits": [
@@ -588,12 +588,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Copy Editing",
     "tagline": "Sharpen your prose to perfection.",
     "category": "Book Editing",
-    "img": "/service-editing.jpg",
+    "img": "/service-editing.webp",
     "gallery": [
-      "/service-editing.jpg",
-      "/gal-copyedit-2.jpg",
-      "/gal-copyedit-3.jpg",
-      "/gal-proof-2.jpg"
+      "/service-editing.webp",
+      "/gal-copyedit-2.webp",
+      "/gal-copyedit-3.webp",
+      "/gal-proof-2.webp"
     ],
     "description": "Beyond proofreading, copy editing refines sentence structure, improves clarity, and ensures your writing flows naturally. We preserve your voice while elevating the quality of every paragraph.",
     "benefits": [
@@ -678,12 +678,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Self Publishing",
     "tagline": "Publish on your terms, keep your royalties.",
     "category": "Publishing",
-    "img": "/service-publishing.jpg",
+    "img": "/service-publishing.webp",
     "gallery": [
-      "/service-publishing.jpg",
-      "/gal-pub-2.jpg",
-      "/gal-pub-3.jpg",
-      "/svc-print-demand.jpg"
+      "/service-publishing.webp",
+      "/gal-pub-2.webp",
+      "/gal-pub-3.webp",
+      "/svc-print-demand.webp"
     ],
     "description": "We guide you through every step of self-publishing - from ISBN registration to distribution on Amazon, Barnes & Noble, and beyond. Keep 100% of your royalties and creative control.",
     "benefits": [
@@ -768,12 +768,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "eBook Publishing",
     "tagline": "Reach millions of digital readers.",
     "category": "Publishing",
-    "img": "/svc-ebook.jpg",
+    "img": "/svc-ebook.webp",
     "gallery": [
-      "/svc-ebook.jpg",
-      "/gal-ebook-2.jpg",
-      "/gal-ebook-3.jpg",
-      "/service-publishing.jpg"
+      "/svc-ebook.webp",
+      "/gal-ebook-2.webp",
+      "/gal-ebook-3.webp",
+      "/service-publishing.webp"
     ],
     "description": "We convert and publish your book across all major ebook platforms - Kindle, Apple Books, Kobo, Google Play, and more. Reach readers on every device with a perfectly formatted digital edition.",
     "benefits": [
@@ -858,12 +858,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Print-on-Demand",
     "tagline": "Sell physical books with zero inventory.",
     "category": "Publishing",
-    "img": "/svc-print-demand.jpg",
+    "img": "/svc-print-demand.webp",
     "gallery": [
-      "/svc-print-demand.jpg",
-      "/gal-print-2.jpg",
-      "/gal-print-3.jpg",
-      "/service-publishing.jpg"
+      "/svc-print-demand.webp",
+      "/gal-print-2.webp",
+      "/gal-print-3.webp",
+      "/service-publishing.webp"
     ],
     "description": "With print-on-demand publishing, your book is printed and shipped only when someone orders it - no warehousing, no upfront costs, no risk. We set up your POD listing on Amazon KDP and IngramSpark so you earn royalties on every copy sold.",
     "benefits": [
@@ -948,12 +948,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Cover Design",
     "tagline": "A cover that sells before they read page one.",
     "category": "Book Marketing",
-    "img": "/service-cover-design.jpg",
+    "img": "/service-cover-design.webp",
     "gallery": [
-      "/service-cover-design.jpg",
-      "/gal-cover-2.jpg",
-      "/gal-cover-3.jpg",
-      "/svc-book-writing.jpg"
+      "/service-cover-design.webp",
+      "/gal-cover-2.webp",
+      "/gal-cover-3.webp",
+      "/svc-book-writing.webp"
     ],
     "description": "Our award-winning designers create covers that stop scrollers in their tracks. Genre-appropriate, commercially savvy, and stunning in print and digital - every cover is designed to sell.",
     "benefits": [
@@ -1038,12 +1038,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Audiobook Production",
     "tagline": "Bring your book to life with professional audio.",
     "category": "Book Marketing",
-    "img": "/service-audiobook.jpg",
+    "img": "/service-audiobook.webp",
     "gallery": [
-      "/service-audiobook.jpg",
-      "/gal-audio-2.jpg",
-      "/gal-audio-3.jpg",
-      "/service-marketing.jpg"
+      "/service-audiobook.webp",
+      "/gal-audio-2.webp",
+      "/gal-audio-3.webp",
+      "/service-marketing.webp"
     ],
     "description": "Professional narration, studio-quality recording, and ACX/Findaway distribution. Our audiobook production service gives your readers the option to listen wherever they go.",
     "benefits": [
@@ -1128,12 +1128,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Author Website",
     "tagline": "Your professional home on the internet.",
     "category": "Book Marketing",
-    "img": "/svc-author-website.jpg",
+    "img": "/svc-author-website.webp",
     "gallery": [
-      "/svc-author-website.jpg",
-      "/gal-web-2.jpg",
-      "/gal-web-3.jpg",
-      "/service-marketing.jpg"
+      "/svc-author-website.webp",
+      "/gal-web-2.webp",
+      "/gal-web-3.webp",
+      "/service-marketing.webp"
     ],
     "description": "Every serious author needs a professional website. We design and build a stunning author site that showcases your books, bio, blog, and contact form - optimized for SEO so readers can find you on Google.",
     "benefits": [
@@ -1218,12 +1218,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Social Media Marketing",
     "tagline": "Build your author brand where readers live.",
     "category": "Book Marketing",
-    "img": "/service-marketing.jpg",
+    "img": "/service-marketing.webp",
     "gallery": [
-      "/service-marketing.jpg",
-      "/gal-social-2.jpg",
-      "/gal-social-3.jpg",
-      "/svc-author-website.jpg"
+      "/service-marketing.webp",
+      "/gal-social-2.webp",
+      "/gal-social-3.webp",
+      "/svc-author-website.webp"
     ],
     "description": "We manage your author presence on Facebook, Instagram, TikTok (BookTok), and X - creating scroll-stopping content that builds your following, drives book sales, and turns readers into fans.",
     "benefits": [
@@ -1308,12 +1308,12 @@ export const SERVICES: ServiceItem[] = [
     "title": "Book Trailer",
     "tagline": "A cinematic preview that sells your book.",
     "category": "Book Marketing",
-    "img": "/svc-book-trailer.jpg",
+    "img": "/svc-book-trailer.webp",
     "gallery": [
-      "/svc-book-trailer.jpg",
-      "/gal-trailer-2.jpg",
-      "/gal-trailer-3.jpg",
-      "/service-marketing.jpg"
+      "/svc-book-trailer.webp",
+      "/gal-trailer-2.webp",
+      "/gal-trailer-3.webp",
+      "/service-marketing.webp"
     ],
     "description": "Book trailers are one of the most powerful marketing tools an author can have. We produce professional, cinematic book trailers that capture the mood of your story and drive readers to buy - perfect for social media, your website, and Amazon.",
     "benefits": [

@@ -14,56 +14,56 @@ const GENRE_DATA: GenreItem[] = [
   {
     name: "Real Estate",
     tagline: "Property, investment & market insights",
-    covers: ["/genre-real-estate.jpg", "/genre-memoir.jpg"],
+    covers: ["/genre-real-estate.webp", "/genre-memoir.webp"],
     color: "from-emerald-900/80 to-teal-900/90",
     accent: "#10b981"
   },
   {
     name: "Fantasy",
     tagline: "Epic worlds beyond imagination",
-    covers: ["/genre-fantasy.jpg", "/genre-illustration.jpg"],
+    covers: ["/genre-fantasy.webp", "/genre-illustration.webp"],
     color: "from-purple-900/80 to-indigo-900/90",
     accent: "#a855f7"
   },
   {
     name: "Romance",
     tagline: "Stories that touch the heart",
-    covers: ["/genre-romance.jpg", "/genre-memoir.jpg"],
+    covers: ["/genre-romance.webp", "/genre-memoir.webp"],
     color: "from-pink-800/80 to-rose-900/90",
     accent: "#f43f5e"
   },
   {
     name: "Biblical",
     tagline: "Faith, scripture & spiritual wisdom",
-    covers: ["/genre-biblical.jpg", "/genre-memoir.jpg"],
+    covers: ["/genre-biblical.webp", "/genre-memoir.webp"],
     color: "from-yellow-900/80 to-amber-900/90",
     accent: "#d97706"
   },
   {
     name: "Human Resources",
     tagline: "People, leadership & workplace culture",
-    covers: ["/genre-hr.jpg", "/genre-real-estate.jpg"],
+    covers: ["/genre-hr.webp", "/genre-real-estate.webp"],
     color: "from-blue-900/80 to-sky-900/90",
     accent: "#3b82f6"
   },
   {
     name: "Illustration",
     tagline: "Art-driven stories for every age",
-    covers: ["/genre-illustration.jpg", "/genre-fantasy.jpg"],
+    covers: ["/genre-illustration.webp", "/genre-fantasy.webp"],
     color: "from-fuchsia-900/80 to-pink-900/90",
     accent: "#e879f9"
   },
   {
     name: "True Crime",
     tagline: "Real stories. Real drama.",
-    covers: ["/genre-truecrime.jpg", "/genre-memoir.jpg"],
+    covers: ["/genre-truecrime.webp", "/genre-memoir.webp"],
     color: "from-zinc-900/80 to-stone-900/90",
     accent: "#84cc16"
   },
   {
     name: "Memoir / Autobiography",
     tagline: "Your life. Your legacy.",
-    covers: ["/genre-memoir.jpg", "/genre-romance.jpg"],
+    covers: ["/genre-memoir.webp", "/genre-romance.webp"],
     color: "from-yellow-800/80 to-amber-900/90",
     accent: "#eab308"
   }
@@ -76,7 +76,7 @@ export const GenreSection: React.FC = () => {
     <section
       className="relative py-24 overflow-hidden bg-navy text-white font-sans"
       style={{
-        backgroundImage: "url('/bg-steps.png')",
+        backgroundImage: "url('/bg-steps.webp')",
         backgroundSize: "cover",
         backgroundPosition: "center"
       }}

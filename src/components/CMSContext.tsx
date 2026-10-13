@@ -185,9 +185,9 @@ export const fallbackCMSData: CMSData = {
   hero_phone: "+1 (800) 555-0199",
   hero_ratingText: "Rated 9.1 out of 10",
   hero_ratingCount: "3,428",
-  hero_image_url: "/assets/writing-desk-CeaHrFGY.png",
+  hero_image_url: "/assets/writing-desk-CeaHrFGY.webp",
   hero_image_alt: "Beyond Book Publishing Editorial Desk",
-  hero_bg_image: "/bg-hero.png",
+  hero_bg_image: "/bg-hero.webp",
 
   about_intro_img: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600",
   about_intro_img_alt: "Stack of hardcover classical lit books",

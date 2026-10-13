@@ -218,8 +218,12 @@ export const About: React.FC = () => {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-navy">
                 <img
-                  src={cms.about_intro_img || "/assets/writing-desk-CeaHrFGY.png"}
+                  src={cms.about_intro_img || "/assets/writing-desk-CeaHrFGY.webp"}
                   alt={cms.about_intro_img_alt || "Beyond Book Publishing editorial desk"}
+                  loading="lazy"
+                  decoding="async"
+                  width={600}
+                  height={480}
                   className="w-full h-[480px] object-cover hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     const target = e.currentTarget;

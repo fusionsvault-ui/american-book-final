@@ -2,6 +2,7 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import compression from "compression";
 import mongoose from "mongoose";
 import { initializeApp as initFirebaseApp } from "firebase/app";
 import {
@@ -17,6 +18,7 @@ import {
 dotenv.config();
 
 const app = express();
+app.use(compression());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
@@ -29,8 +31,14 @@ const HOST = hostArgIdx !== -1 ? process.argv[hostArgIdx + 1] : "0.0.0.0";
 
 const UPSTREAM_URL = "https://american-book-founderszip--devwork65.replit.app";
 
-// Serve public assets directly with proper cache headers
-app.use(express.static(path.join(process.cwd(), "public")));
+// Serve public assets directly with proper cache headers (7-day client cache)
+app.use(
+  express.static(path.join(process.cwd(), "public"), {
+    maxAge: "7d",
+    etag: true,
+    lastModified: true,
+  })
+);
 
 // Redirect/Proxy missing static assets to the upstream Replit site to ensure all images load perfectly
 app.use((req, res, next) => {
@@ -108,9 +116,27 @@ let firestoreDb: any = null;
 let firebaseConnected = false;
 
 try {
+  let firebaseConfig: any = null;
   const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
+
   if (fs.existsSync(firebaseConfigPath)) {
-    const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
+    firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
+  } else {
+    // Fallback to environment variables (for Vercel / Docker / Production Hosting)
+    firebaseConfig = {
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "pristine-shade-ls7sz",
+      appId: process.env.VITE_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || "1:693433277059:web:e33a14840d737f844d99b6",
+      apiKey: process.env.VITE_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "AIzaSyDQDuF7DcVnuyHBm4i1YVglr9bw2VE39Yw",
+      authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || "pristine-shade-ls7sz.firebaseapp.com",
+      firestoreDatabaseId: process.env.VITE_FIREBASE_DATABASE_ID || process.env.FIREBASE_DATABASE_ID || "ai-studio-americanbookfoun-0b29e0f1-db1b-4d01-9805-9afc639ab23d",
+      storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || "pristine-shade-ls7sz.firebasestorage.app",
+      messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID || "693433277059",
+      measurementId: "",
+      oAuthClientId: process.env.VITE_FIREBASE_OAUTH_CLIENT_ID || process.env.FIREBASE_OAUTH_CLIENT_ID || "693433277059-vq25cvks0e3aljp1ijka2tcc8o85103e.apps.googleusercontent.com",
+    };
+  }
+
+  if (firebaseConfig && firebaseConfig.projectId) {
     const fbApp = initFirebaseApp(firebaseConfig, "server_app");
     firestoreDb = getFirebaseFirestore(fbApp, firebaseConfig.firestoreDatabaseId);
     firebaseConnected = true;
@@ -868,8 +894,19 @@ async function startServer() {
     console.log("Starting server in PRODUCTION mode (serving compiled /dist assets)...");
     const distPath = path.join(process.cwd(), "dist");
     
-    // Serve static files from compiled dist folder
-    app.use(express.static(distPath));
+    // Serve static files from compiled dist folder with aggressive caching for hashed assets
+    app.use(
+      express.static(distPath, {
+        maxAge: "1y",
+        immutable: true,
+        etag: true,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith("index.html")) {
+            res.setHeader("Cache-Control", "no-cache");
+          }
+        },
+      })
+    );
     
     // Fallback all SPA pages to dist/index.html
     app.get("*", (req, res) => {

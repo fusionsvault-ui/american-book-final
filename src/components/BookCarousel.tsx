@@ -11,27 +11,27 @@ export interface CarouselBookItem {
 }
 
 const FIRST_ROW_BOOKS: CarouselBookItem[] = [
-  { img: "/assets/hero-1-BCRMWL0r.png", title: "The Silent Witness", author: "Eleanor Vance", genre: "Thriller", rating: "4.9" },
-  { img: "/assets/hero-2-CMx4LXdS.png", title: "Golden Hour", author: "Amelia Rose", genre: "Romance", rating: "4.8" },
-  { img: "/assets/hero-3-DOROJ8Qu.png", title: "The Dragon's Blade", author: "Lara Vance", genre: "Fantasy", rating: "4.9" },
-  { img: "/assets/beasts-DBDRH50F.png", title: "The Sundered Dawn", author: "Ava Reid", genre: "Horror", rating: "4.7" },
-  { img: "/assets/scifi-u55kilzw.png", title: "Rising Sun", author: "Kaizen Moore", genre: "Sci-Fi", rating: "4.8" },
-  { img: "/assets/literary-BrcDpQdZ.png", title: "The Final Act", author: "Elara Stone", genre: "Literary", rating: "4.9" },
-  { img: "/genre-thriller-1.png", title: "Shadow Protocol", author: "J.R. Black", genre: "Thriller", rating: "4.8" },
-  { img: "/genre-horror-1.png", title: "Nightfall Manor", author: "D. Thorne", genre: "Horror", rating: "4.7" },
-  { img: "/genre-fantasy-1.png", title: "Crown of Embers", author: "M.K. Davis", genre: "Fantasy", rating: "4.9" }
+  { img: "/assets/hero-1-BCRMWL0r.webp", title: "The Silent Witness", author: "Eleanor Vance", genre: "Thriller", rating: "4.9" },
+  { img: "/assets/hero-2-CMx4LXdS.webp", title: "Golden Hour", author: "Amelia Rose", genre: "Romance", rating: "4.8" },
+  { img: "/assets/hero-3-DOROJ8Qu.webp", title: "The Dragon's Blade", author: "Lara Vance", genre: "Fantasy", rating: "4.9" },
+  { img: "/assets/beasts-DBDRH50F.webp", title: "The Sundered Dawn", author: "Ava Reid", genre: "Horror", rating: "4.7" },
+  { img: "/assets/scifi-u55kilzw.webp", title: "Rising Sun", author: "Kaizen Moore", genre: "Sci-Fi", rating: "4.8" },
+  { img: "/assets/literary-BrcDpQdZ.webp", title: "The Final Act", author: "Elara Stone", genre: "Literary", rating: "4.9" },
+  { img: "/genre-thriller-1.webp", title: "Shadow Protocol", author: "J.R. Black", genre: "Thriller", rating: "4.8" },
+  { img: "/genre-horror-1.webp", title: "Nightfall Manor", author: "D. Thorne", genre: "Horror", rating: "4.7" },
+  { img: "/genre-fantasy-1.webp", title: "Crown of Embers", author: "M.K. Davis", genre: "Fantasy", rating: "4.9" }
 ];
 
 const SECOND_ROW_BOOKS: CarouselBookItem[] = [
-  { img: "/genre-romance-1.png", title: "Midnight in Manhattan", author: "Clara Bell", genre: "Romance", rating: "4.8" },
-  { img: "/genre-western-1.png", title: "Dust & Thunder", author: "Tom Rider", genre: "Western", rating: "4.7" },
-  { img: "/genre-truecrime-1.png", title: "The Evidence Board", author: "Sara Hill", genre: "True Crime", rating: "4.8" },
-  { img: "/genre-memoir-1.png", title: "Sunrise Over America", author: "L. Foster", genre: "Memoir", rating: "4.9" },
-  { img: "/genre-scifi-1.png", title: "Beyond the Rings", author: "A. Turing", genre: "Sci-Fi", rating: "4.8" },
-  { img: "/genre-fantasy-2.png", title: "Storm Caller", author: "Y. Tanaka", genre: "Fantasy", rating: "4.7" },
-  { img: "/genre-horror-2.png", title: "The Last Grave", author: "C. Rivera", genre: "Horror", rating: "4.8" },
-  { img: "/assets/hero-1-BCRMWL0r.png", title: "Dead Reckoning", author: "P. Stone", genre: "Thriller", rating: "4.9" },
-  { img: "/assets/hero-3-DOROJ8Qu.png", title: "Ember & Ash", author: "W. James", genre: "Fantasy", rating: "4.8" }
+  { img: "/genre-romance-1.webp", title: "Midnight in Manhattan", author: "Clara Bell", genre: "Romance", rating: "4.8" },
+  { img: "/genre-western-1.webp", title: "Dust & Thunder", author: "Tom Rider", genre: "Western", rating: "4.7" },
+  { img: "/genre-truecrime-1.webp", title: "The Evidence Board", author: "Sara Hill", genre: "True Crime", rating: "4.8" },
+  { img: "/genre-memoir-1.webp", title: "Sunrise Over America", author: "L. Foster", genre: "Memoir", rating: "4.9" },
+  { img: "/genre-scifi-1.webp", title: "Beyond the Rings", author: "A. Turing", genre: "Sci-Fi", rating: "4.8" },
+  { img: "/genre-fantasy-2.webp", title: "Storm Caller", author: "Y. Tanaka", genre: "Fantasy", rating: "4.7" },
+  { img: "/genre-horror-2.webp", title: "The Last Grave", author: "C. Rivera", genre: "Horror", rating: "4.8" },
+  { img: "/assets/hero-1-BCRMWL0r.webp", title: "Dead Reckoning", author: "P. Stone", genre: "Thriller", rating: "4.9" },
+  { img: "/assets/hero-3-DOROJ8Qu.webp", title: "Ember & Ash", author: "W. James", genre: "Fantasy", rating: "4.8" }
 ];
 
 interface SliderProps {
@@ -103,6 +103,9 @@ const EmblaSliderRow: React.FC<SliderProps> = ({ books, reverse = false }) => {
                     src={book.img}
                     alt={`${book.title} cover`}
                     loading="lazy"
+                    decoding="async"
+                    width={300}
+                    height={400}
                     className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                     onError={(e) => {
                       const target = e.currentTarget;

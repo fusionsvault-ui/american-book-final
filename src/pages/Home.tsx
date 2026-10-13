@@ -160,7 +160,7 @@ export const Home: React.FC = () => {
       <section 
         className="relative text-white overflow-hidden bg-navy"
         style={{
-          backgroundImage: "url('/bg-hero.png')",
+          backgroundImage: "url('/bg-hero.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center top"
         }}
@@ -367,7 +367,7 @@ export const Home: React.FC = () => {
       <section 
         className="relative py-24 overflow-hidden"
         style={{
-          backgroundImage: "url('/bg-process.png')",
+          backgroundImage: "url('/bg-process.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
@@ -476,7 +476,7 @@ export const Home: React.FC = () => {
       <section 
         className="relative py-24 text-white overflow-hidden bg-navy"
         style={{
-          backgroundImage: "url('/bg-process.png')",
+          backgroundImage: "url('/bg-process.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
@@ -562,12 +562,12 @@ export const Home: React.FC = () => {
           {/* Verified Authors circular list */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 pt-4">
             {[
-              { name: "James Carter", genre: "Thriller Author", img: "/author-1.png" },
-              { name: "Amara Williams", genre: "Romance Novelist", img: "/author-2.png" },
-              { name: "David Chen", genre: "Sci-Fi Writer", img: "/author-3.png" },
-              { name: "Linda Foster", genre: "Memoir Author", img: "/author-4.png" },
-              { name: "Carlos Rivera", genre: "Business Writer", img: "/author-5.png" },
-              { name: "Yuki Tanaka", genre: "Literary Fiction", img: "/author-6.png" }
+              { name: "James Carter", genre: "Thriller Author", img: "/author-1.webp" },
+              { name: "Amara Williams", genre: "Romance Novelist", img: "/author-2.webp" },
+              { name: "David Chen", genre: "Sci-Fi Writer", img: "/author-3.webp" },
+              { name: "Linda Foster", genre: "Memoir Author", img: "/author-4.webp" },
+              { name: "Carlos Rivera", genre: "Business Writer", img: "/author-5.webp" },
+              { name: "Yuki Tanaka", genre: "Literary Fiction", img: "/author-6.webp" }
             ].map((author, idx) => (
               <motion.div 
                 key={idx}
@@ -680,7 +680,7 @@ export const Home: React.FC = () => {
       <section 
         className="relative py-24 overflow-hidden"
         style={{
-          backgroundImage: "url('/bg-concerned.png')",
+          backgroundImage: "url('/bg-concerned.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
@@ -783,7 +783,7 @@ export const Home: React.FC = () => {
               {/* Writing Desk Image */}
               <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white mt-4 bg-navy">
                 <img 
-                  src={cms.hero_image_url || "/assets/writing-desk-CeaHrFGY.png"} 
+                  src={cms.hero_image_url || "/assets/writing-desk-CeaHrFGY.webp"} 
                   alt={cms.hero_image_alt || "Beyond Book Publishing Editorial Desk"} 
                   loading="lazy"
                   decoding="async"
@@ -910,7 +910,7 @@ export const Home: React.FC = () => {
       <section 
         className="relative py-20 overflow-hidden text-center bg-gold"
         style={{
-          backgroundImage: "url('/bg-cta.png')",
+          backgroundImage: "url('/bg-cta.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center"
         }}
