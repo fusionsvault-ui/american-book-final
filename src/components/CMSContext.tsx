@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem } from "../types";
+import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem, HostingSettings } from "../types";
 import { BLOG_POSTS, PORTFOLIO_BOOKS, PRICING_PACKAGES, TESTIMONIALS } from "../data/websiteData";
 import { SERVICES, ServiceItem } from "../data/servicesData";
 
@@ -117,6 +117,7 @@ export interface CMSData {
   testimonials: TestimonialItem[];
   portfolioBooks: PortfolioBookItem[];
   custom_pages?: CustomPageItem[];
+  hosting_settings?: HostingSettings;
 }
 
 export const fallbackCMSData: CMSData = {
@@ -228,6 +229,19 @@ export const fallbackCMSData: CMSData = {
   portfolioBooks: PORTFOLIO_BOOKS,
   header_show_phone: false,
   custom_pages: [],
+  hosting_settings: {
+    planName: "Enterprise NVMe SSD Cloud Hosting",
+    startDate: "2026-10-12",
+    expiryDate: "2027-10-12",
+    totalStorageGb: 100,
+    bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+    serverIp: "172.67.182.94",
+    serverLocation: "US-East (Virginia, USA) / Global Edge CDN",
+    sslStatus: "Active & Secured (TLS 1.3 Auto-Renewing SSL)",
+    autoRenew: true,
+    providerName: "Beyond Cloud Hosting Infrastructure",
+    clientNotes: "1-Year Dedicated Managed Hosting Package. Daily automated backups and DDoS protection active.",
+  },
 };
 
 export interface CMSContextType {
@@ -287,6 +301,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       portfolioBooks: remote.portfolioBooks || base.portfolioBooks,
       custom_pages: Array.isArray(remote.custom_pages) ? remote.custom_pages : (base.custom_pages || []),
       header_show_phone: remote.header_show_phone !== undefined ? remote.header_show_phone : true,
+      hosting_settings: remote.hosting_settings ? { ...base.hosting_settings, ...remote.hosting_settings } : base.hosting_settings,
     };
   };
 

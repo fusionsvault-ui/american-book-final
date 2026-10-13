@@ -110,3 +110,17 @@ export interface CustomPageItem {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface HostingSettings {
+  planName: string;
+  startDate: string;
+  expiryDate: string;
+  totalStorageGb: number;
+  bandwidth: string;
+  serverIp?: string;
+  serverLocation?: string;
+  sslStatus?: string;
+  autoRenew?: boolean;
+  providerName?: string;
+  clientNotes?: string;
+}

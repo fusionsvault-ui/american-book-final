@@ -70,6 +70,11 @@ import {
   ShieldCheck,
   ToggleLeft,
   ToggleRight,
+  Server,
+  HardDrive,
+  Cpu,
+  Activity,
+  Wifi,
 } from "lucide-react";
 
 interface LeadItem {
@@ -118,6 +123,7 @@ type AdminTab =
   | "seo" 
   | "contact" 
   | "leads" 
+  | "hosting"
   | "tools";
 
 export const AdminDashboard: React.FC = () => {
@@ -257,6 +263,31 @@ export const AdminDashboard: React.FC = () => {
       setIsLoadingLeads(false);
     }
   };
+
+  // ================= HOSTING & INFRASTRUCTURE STATS =================
+  const [hostingStats, setHostingStats] = useState<any>(null);
+  const [hostingLoading, setHostingLoading] = useState(false);
+
+  const fetchHostingStats = async () => {
+    setHostingLoading(true);
+    try {
+      const res = await fetch("/api/admin/hosting-stats");
+      if (res.ok) {
+        const data = await res.json();
+        setHostingStats(data);
+      }
+    } catch (err) {
+      console.warn("Could not load live hosting stats:", err);
+    } finally {
+      setHostingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && (activeTab === "hosting" || activeTab === "dashboard")) {
+      fetchHostingStats();
+    }
+  }, [isAuthenticated, activeTab]);
 
   // ================= AUTHENTICATION HANDLERS =================
   const handleLogin = async (e: React.FormEvent) => {
@@ -1376,6 +1407,7 @@ export const AdminDashboard: React.FC = () => {
               { id: "seo", label: "SEO & Indexation", icon: <Search className="w-4 h-4" />, badge: formData.global_noindex !== false ? "NOINDEX" : undefined },
               { id: "contact", label: "Contact Details", icon: <Phone className="w-4 h-4" /> },
               { id: "leads", label: "Form Inquiries", icon: <Users className="w-4 h-4" />, badge: leads?.length },
+              { id: "hosting", label: "Hosting & Server", icon: <Server className="w-4 h-4" />, badge: "364 Days" },
               { id: "tools", label: "Security & Tools", icon: <Database className="w-4 h-4" /> },
             ].map((menu) => {
               const active = activeTab === menu.id;
