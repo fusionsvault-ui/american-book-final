@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem } from "../types";
 import { BLOG_POSTS, PORTFOLIO_BOOKS, PRICING_PACKAGES, TESTIMONIALS } from "../data/websiteData";
 import { SERVICES, ServiceItem } from "../data/servicesData";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
-import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 
 export interface CMSData {
   // General SEO Settings
@@ -249,11 +247,9 @@ const CMSContext = createContext<CMSContextType | undefined>(undefined);
 
 export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<CMSData>(fallbackCMSData);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [dbConnected, setDbConnected] = useState(false);
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving" | "offline" | "connecting">("connecting");
-
-  const cmsDocRef = doc(db, "cms", "website_content");
 
   const refreshFromAPI = async (): Promise<CMSData | null> => {
     try {
@@ -283,6 +279,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const refresh = async () => {
     try {
+      const { db } = await import("../lib/firebase");
+      const { doc, getDoc } = await import("firebase/firestore");
+      const cmsDocRef = doc(db, "cms", "website_content");
       const snap = await getDoc(cmsDocRef);
       if (snap.exists()) {
         const firestoreData = snap.data() as Partial<CMSData>;
@@ -312,6 +311,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // 1. Permanently Save to Firebase Firestore
     try {
+      const { db } = await import("../lib/firebase");
+      const { doc, setDoc } = await import("firebase/firestore");
+      const cmsDocRef = doc(db, "cms", "website_content");
       await setDoc(cmsDocRef, {
         ...newData,
         updatedAt: new Date().toISOString(),
@@ -322,7 +324,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (err) {
       console.error("Failed to save CMS data to Firestore:", err);
       setSyncStatus("offline");
-      handleFirestoreError(err, OperationType.WRITE, "cms/website_content");
     }
 
     // 2. Synchronize with Server API to maintain server-side SEO files (sitemap, robots)
@@ -364,55 +365,67 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return await saveData(fallbackCMSData);
   };
 
-  // Real-time Firestore sync listener
+  // Real-time Firestore sync listener (deferred to idle to optimize initial mobile paint)
   useEffect(() => {
     let unsub: (() => void) | undefined;
-    try {
-      unsub = onSnapshot(
-        cmsDocRef,
-        (snapshot) => {
-          if (snapshot.exists()) {
-            const firestoreData = snapshot.data() as Partial<CMSData>;
-            setData(mergeCMSData(firestoreData));
-            setDbConnected(true);
-            setSyncStatus("synced");
-            setLoading(false);
-          } else {
-            // Document does not exist in Firestore yet: seed it from server API / fallback
-            refreshFromAPI().then((localContent) => {
-              const initialContent = localContent || fallbackCMSData;
-              setDoc(cmsDocRef, {
-                ...initialContent,
-                updatedAt: new Date().toISOString(),
-              })
-                .then(() => {
-                  setData(mergeCMSData(initialContent));
-                  setDbConnected(true);
-                  setSyncStatus("synced");
+    let isCancelled = false;
+
+    const initFirestoreSync = async () => {
+      try {
+        const { db } = await import("../lib/firebase");
+        const { doc, onSnapshot, setDoc } = await import("firebase/firestore");
+        if (isCancelled) return;
+        const cmsDocRef = doc(db, "cms", "website_content");
+
+        unsub = onSnapshot(
+          cmsDocRef,
+          (snapshot) => {
+            if (isCancelled) return;
+            if (snapshot.exists()) {
+              const firestoreData = snapshot.data() as Partial<CMSData>;
+              setData(mergeCMSData(firestoreData));
+              setDbConnected(true);
+              setSyncStatus("synced");
+            } else {
+              // Document does not exist in Firestore yet: seed it from server API / fallback
+              refreshFromAPI().then((localContent) => {
+                if (isCancelled) return;
+                const initialContent = localContent || fallbackCMSData;
+                setDoc(cmsDocRef, {
+                  ...initialContent,
+                  updatedAt: new Date().toISOString(),
                 })
-                .catch(() => {});
-            });
-            setLoading(false);
-          }
-        },
-        (error) => {
-          console.warn("Firestore snapshot error, utilizing fallback API:", error);
-          setDbConnected(false);
-          setSyncStatus("offline");
-          refreshFromAPI().then((json) => {
-            if (json) {
-              setData(mergeCMSData(json));
+                  .then(() => {
+                    setData(mergeCMSData(initialContent));
+                    setDbConnected(true);
+                    setSyncStatus("synced");
+                  })
+                  .catch(() => {});
+              });
             }
-            setLoading(false);
-          });
-        }
-      );
-    } catch (err) {
-      console.warn("Error setting up Firestore snapshot listener:", err);
-      refresh();
-    }
+          },
+          (error) => {
+            console.warn("Firestore snapshot error, utilizing fallback API:", error);
+            setDbConnected(false);
+            setSyncStatus("offline");
+            refreshFromAPI().then((json) => {
+              if (json && !isCancelled) {
+                setData(mergeCMSData(json));
+              }
+            });
+          }
+        );
+      } catch (err) {
+        console.warn("Error setting up deferred Firestore listener:", err);
+      }
+    };
+
+    // Schedule background Firestore initialization without blocking main thread
+    const timerId = setTimeout(initFirestoreSync, 200);
 
     return () => {
+      isCancelled = true;
+      clearTimeout(timerId);
       if (unsub) unsub();
     };
   }, []);

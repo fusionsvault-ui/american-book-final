@@ -131,9 +131,142 @@
         }
       }, true);
     </script>
+    <style>
+      /* Instant Above-The-Fold Critical CSS (Zero Layout Shift & Sub-1s First Paint) */
+      :root {
+        --color-navy: #070929;
+        --color-gold: #f5c518;
+      }
+      body {
+        margin: 0;
+        background-color: #070929;
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .pre-top-bar {
+        background-color: #050720;
+        padding: 6px 12px;
+        font-size: 11px;
+        text-align: center;
+        color: #e2e8f0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      .pre-nav {
+        background-color: #070929;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+      .pre-logo {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 18px;
+        font-weight: 900;
+        color: #ffffff;
+        text-decoration: none;
+        letter-spacing: -0.02em;
+      }
+      .pre-logo span {
+        color: #f5c518;
+      }
+      .pre-hero {
+        background: #070929 url('/bg-hero.webp') center top / cover no-repeat;
+        position: relative;
+        padding: 24px 16px 40px;
+      }
+      .pre-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(7, 9, 41, 0.88);
+        z-index: 1;
+      }
+      .pre-hero-inner {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .pre-eyebrow {
+        color: #f5c518;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .pre-h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 24px;
+        line-height: 1.25;
+        font-weight: 900;
+        color: #ffffff;
+        margin: 0 0 12px;
+      }
+      @media (min-width: 640px) {
+        .pre-h1 { font-size: 32px; }
+      }
+      .pre-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #cbd5e1;
+        margin: 0 0 16px;
+        max-width: 580px;
+      }
+      .pre-btn-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .pre-btn-call {
+        background: #070929;
+        border: 2px solid #f5c518;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+      .pre-btn-quote {
+        background: #f5c518;
+        border: 2px solid #f5c518;
+        color: #070929;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Instant Pre-rendered Mobile Critical Above-the-fold Shell -->
+      <div class="pre-top-bar">
+        <span>Rated 9.1 out of 10 ★★★★★ Based on 3,428 Verified Reviews</span>
+      </div>
+      <header class="pre-nav">
+        <a href="/" class="pre-logo">BEYOND <span>BOOK</span> PUBLISHING</a>
+        <a href="tel:+18005550199" class="pre-btn-quote" style="padding: 6px 12px; font-size: 12px;">+1 (800) 555-0199</a>
+      </header>
+      <section class="pre-hero">
+        <div class="pre-hero-inner">
+          <p class="pre-eyebrow">Become A Self-Published Author:</p>
+          <h1 class="pre-h1">Control Your Work, Share Your Voice, And Keep 100% Of Your Royalties</h1>
+          <p class="pre-desc">
+            Beyond Book Publishing pairs authors with a master guild of bestselling ghostwriters, veteran editors, and global distribution specialists. Keep 100% of your earnings, copyright, and creative freedom.
+          </p>
+          <div class="pre-btn-group">
+            <a href="tel:+18005550199" class="pre-btn-call">Schedule Free Strategy Call</a>
+            <a href="/pricing" class="pre-btn-quote">Get a Free Quote</a>
+          </div>
+        </div>
+      </section>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,10 +1,8 @@
 import React, { Suspense, lazy } from "react";
 import { Switch, Route } from "wouter";
 import { CMSProvider } from "./components/CMSContext";
-import { Home } from "./pages/Home";
 import { ScrollToTop } from "./components/ScrollToTop";
-
-// Dynamic code splitting for non-home routes to maximize mobile PageSpeed performance
+const Home = lazy(() => import("./pages/Home").then((m) => ({ default: m.Home })));
 const About = lazy(() => import("./pages/About").then((m) => ({ default: m.About })));
 const ServicesList = lazy(() => import("./pages/ServicesList").then((m) => ({ default: m.ServicesList })));
 const ServiceDetails = lazy(() => import("./pages/ServiceDetails").then((m) => ({ default: m.ServiceDetails })));

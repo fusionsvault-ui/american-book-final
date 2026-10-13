@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { HeaderNav } from "./HeaderNav";
 import { Footer } from "./Footer";
 import { FloatingCTA } from "./FloatingCTA";
-import { ChatAssistant } from "./ChatAssistant";
+const ChatAssistant = React.lazy(() => import("./ChatAssistant").then(m => ({ default: m.ChatAssistant })));
 import { WavingFlag } from "./WavingFlag";
 import { ScrollToTop } from "./ScrollToTop";
 import { useCMS } from "./CMSContext";
@@ -259,7 +259,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
       {/* Floating Interactive Handlers */}
       <FloatingCTA />
-      <ChatAssistant />
+      <React.Suspense fallback={null}>
+        <ChatAssistant />
+      </React.Suspense>
     </div>
   );
 };

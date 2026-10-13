@@ -3,9 +3,9 @@ import { Link } from "wouter";
 import { motion } from "motion/react";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
-import { QuoteModal } from "../components/QuoteModal";
-import { BookCarousel } from "../components/BookCarousel";
-import { GenreSection } from "../components/GenreSection";
+const QuoteModal = React.lazy(() => import("../components/QuoteModal").then(m => ({ default: m.QuoteModal })));
+const BookCarousel = React.lazy(() => import("../components/BookCarousel").then(m => ({ default: m.BookCarousel })));
+const GenreSection = React.lazy(() => import("../components/GenreSection").then(m => ({ default: m.GenreSection })));
 import { SERVICES } from "../data/servicesData";
 import { TESTIMONIALS, BLOG_POSTS } from "../data/websiteData";
 
@@ -148,13 +148,17 @@ export const Home: React.FC = () => {
       description={cms.seo_home_desc || "Upgrade to premium book production with Beyond Book Publishing (BeyondBookpublishing.com). Capturing your voice across every genre. Keep 100% of your royalties and copyright."}
     >
       {/* Dynamic Consultation Quote Modal overlay */}
-      <QuoteModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        source={modalSource}
-        title="Get A Free Consultation"
-        subtitle="Connect with our expert team of professional ghostwriters and publishers. We reply within 24 hours!"
-      />
+      {modalOpen && (
+        <React.Suspense fallback={null}>
+          <QuoteModal
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            source={modalSource}
+            title="Get A Free Consultation"
+            subtitle="Connect with our expert team of professional ghostwriters and publishers. We reply within 24 hours!"
+          />
+        </React.Suspense>
+      )}
 
       {/* ================= HERO SECTION (dk.js restored) ================= */}
       <section 
@@ -524,10 +528,14 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ================= EVERY VOICE HAS A GENRE (oO.js restored via GenreSection) ================= */}
-      <GenreSection />
+      <React.Suspense fallback={<div className="h-64 bg-navy" />}>
+        <GenreSection />
+      </React.Suspense>
 
       {/* ================= PORTFOLIO MULTI FLOW SLIDERS ================= */}
-      <BookCarousel />
+      <React.Suspense fallback={<div className="h-64 bg-[#f7f4ed]" />}>
+        <BookCarousel />
+      </React.Suspense>
 
       {/* ================= MEET OUR PUBLISHED AUTHORS (pO.js restored) ================= */}
       <section className="py-24 bg-white text-navy" id="meet-published-authors">
