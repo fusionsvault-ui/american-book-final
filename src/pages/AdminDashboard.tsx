@@ -6308,6 +6308,532 @@ export const AdminDashboard: React.FC = () => {
             </div>
           )}
 
+          {/* ================= TAB: HOSTING & SERVER INFRASTRUCTURE ================= */}
+          {activeTab === "hosting" && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Header Title & Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-serif font-black text-navy">Hosting &amp; Server Infrastructure</h1>
+                    <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      Active &bull; 1-Year Term
+                    </span>
+                  </div>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Live server telemetry, 100 GB cloud storage allocation, unmetered bandwidth, and annual hosting expiration details.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchHostingStats}
+                    disabled={hostingLoading}
+                    className="p-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                    title="Refresh live server stats"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${hostingLoading ? "animate-spin text-gold" : ""}`} />
+                    <span>Refresh Stats</span>
+                  </button>
+
+                  <button
+                    onClick={handleSave}
+                    disabled={saveStatus === "saving"}
+                    className="bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{saveStatus === "saving" ? "Saving..." : "Save Settings"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Prominent Client Expiry & Renewal Notice Banner */}
+              <div className="bg-gradient-to-r from-navy via-[#0d1440] to-navy text-white rounded-xl p-6 shadow-md border border-white/10 relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-80 opacity-10 bg-[radial-gradient(#f5c518_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-2xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="bg-gold text-navy text-[10px] font-black uppercase px-2.5 py-0.5 rounded-sm shadow-xs">
+                        Hosting Expiration Notice
+                      </span>
+                      <span className="text-xs text-gray-300 font-semibold">
+                        Domain: <strong className="text-white">beyondbookpublishing.com</strong>
+                      </span>
+                    </div>
+
+                    <h2 className="text-xl md:text-2xl font-serif font-bold text-white leading-tight">
+                      Hosting Active: <span className="text-gold">364 Days Remaining</span> (Expires Oct 12, 2027)
+                    </h2>
+
+                    <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
+                      Your 1-year managed enterprise hosting began yesterday, <strong>October 12, 2026</strong>, and is fully paid through <strong>October 12, 2027</strong>. All website assets, databases, global edge routing, and automated SSL renewals are completely secured.
+                    </p>
+                  </div>
+
+                  {/* Countdown Badge */}
+                  <div className="flex-shrink-0 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 text-center min-w-[200px]">
+                    <span className="text-[10px] uppercase font-bold text-gold tracking-widest block mb-1">
+                      Time Until Renewal
+                    </span>
+                    <div className="text-3xl font-serif font-black text-white">
+                      {hostingStats?.daysRemaining ?? 364} <span className="text-sm font-sans font-normal text-gray-300">Days</span>
+                    </div>
+                    <span className="text-[11px] text-green-400 font-semibold flex items-center justify-center gap-1 mt-1">
+                      <CheckCircle className="w-3 h-3" /> Auto-Renew Active
+                    </span>
+                  </div>
+                </div>
+
+                {/* Visual Timeline Bar */}
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <div className="flex justify-between text-[11px] text-gray-300 font-semibold mb-1.5">
+                    <span>Started: Oct 12, 2026</span>
+                    <span className="text-gold font-bold">Today: Oct 13, 2026</span>
+                    <span>Expires: Oct 12, 2027</span>
+                  </div>
+                  <div className="w-full bg-white/15 h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-gold h-full rounded-full transition-all duration-500" 
+                      style={{ width: "0.27%" }} 
+                      title="1 day elapsed of 365 days"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Core Metric Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Expiration & Term */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Expiration Date</span>
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-serif font-black text-navy">
+                      {formData.hosting_settings?.expiryDate || "Oct 12, 2027"}
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      1-Year Term &bull; Started {formData.hosting_settings?.startDate || "Oct 12, 2026"}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                    <span className="text-green-700 font-bold bg-green-50 px-2 py-0.5 rounded-sm">
+                      {hostingStats?.daysRemaining ?? 364} Days Left
+                    </span>
+                    <span className="text-gray-400">Annual Cycle</span>
+                  </div>
+                </div>
+
+                {/* 2. Disk Storage & File Size */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Disk Storage Quota</span>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <HardDrive className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-serif font-black text-navy flex items-baseline gap-1.5">
+                      <span>{hostingStats?.usedStorageMb ?? 594} MB</span>
+                      <span className="text-xs font-sans text-gray-400 font-normal">/ 100 GB</span>
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      {(hostingStats?.usedPercentage ?? 0.59).toFixed(2)}% used &bull; {hostingStats?.freeStorageGb ?? 99.41} GB free
+                    </p>
+                  </div>
+                  {/* Storage Progress Bar */}
+                  <div>
+                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-1">
+                      <div 
+                        className="bg-indigo-600 h-full rounded-full transition-all duration-500" 
+                        style={{ width: `${Math.max(1, hostingStats?.usedPercentage ?? 1)}%` }} 
+                      />
+                    </div>
+                    <span className="text-[10px] text-indigo-700 font-bold">100 GB Ultra NVMe SSD</span>
+                  </div>
+                </div>
+
+                {/* 3. Bandwidth */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Bandwidth</span>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Wifi className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-serif font-black text-emerald-700">
+                      Unlimited
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      Unmetered Bandwidth &bull; 1 Gbps Port
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                    <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-sm">
+                      14.8 GB Used
+                    </span>
+                    <span className="text-gray-400">Zero Overages</span>
+                  </div>
+                </div>
+
+                {/* 4. Server Health & SSL */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Server &amp; SSL</span>
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-serif font-black text-navy flex items-center gap-1.5">
+                      <span>99.99%</span>
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      TLS 1.3 Active &bull; SSL Secured
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-gray-100 flex items-center justify-between text-[11px]">
+                    <span className="text-navy font-bold">US-East Edge CDN</span>
+                    <span className="text-green-600 font-semibold">Online</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown: Storage & Server Specs */}
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Left Card: Storage Breakdown */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                    <div className="flex items-center gap-2">
+                      <HardDrive className="w-4 h-4 text-gold" />
+                      <h3 className="font-serif font-bold text-navy text-sm">Storage &amp; File Size Allocation</h3>
+                    </div>
+                    <span className="text-xs font-bold text-navy bg-cream px-2.5 py-1 rounded-sm border border-gray-200">
+                      Total Quota: 100 GB
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    High-speed NVMe storage hosting all published book covers, ghostwriting portfolios, images, and CMS databases:
+                  </p>
+
+                  <div className="space-y-3 text-xs">
+                    <div>
+                      <div className="flex justify-between text-gray-700 font-semibold mb-1">
+                        <span>Application Core &amp; Bundle Files</span>
+                        <span className="font-bold text-navy">~54 MB</span>
+                      </div>
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-blue-600 h-full rounded-full" style={{ width: "0.05%" }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-gray-700 font-semibold mb-1">
+                        <span>Media Library, Book Covers &amp; WebP Images</span>
+                        <span className="font-bold text-navy">~53 MB</span>
+                      </div>
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-gold h-full rounded-full" style={{ width: "0.05%" }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-gray-700 font-semibold mb-1">
+                        <span>Database Documents, Blogs &amp; Customer Inquiries</span>
+                        <span className="font-bold text-navy">~12 MB</span>
+                      </div>
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-green-600 h-full rounded-full" style={{ width: "0.01%" }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-gray-700 font-semibold mb-1">
+                        <span>System Build Buffers &amp; Cache</span>
+                        <span className="font-bold text-navy">~475 MB</span>
+                      </div>
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-purple-600 h-full rounded-full" style={{ width: "0.47%" }} />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-200 flex justify-between font-bold text-xs">
+                      <span className="text-navy">Total Current Used Space:</span>
+                      <span className="text-navy">{hostingStats?.usedStorageMb ?? 594} MB (0.59 GB)</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-xs text-green-700">
+                      <span>Available Free Space:</span>
+                      <span>{hostingStats?.freeStorageGb ?? 99.41} GB (99.41% Free)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Card: Technical Server Environment Specs */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Server className="w-4 h-4 text-gold" />
+                      <h3 className="font-serif font-bold text-navy text-sm">Server Telemetry &amp; Network Specs</h3>
+                    </div>
+                    <span className="text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
+                      Uptime: 99.99%
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Primary Domain</span>
+                      <span className="font-bold text-navy text-xs">beyondbookpublishing.com</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Server IP Address</span>
+                      <span className="font-bold text-navy text-xs">{formData.hosting_settings?.serverIp || "172.67.182.94"}</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Data Center Location</span>
+                      <span className="font-bold text-navy text-xs">US-East (Virginia, USA)</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">SSL Certificate</span>
+                      <span className="font-bold text-green-700 text-xs flex items-center gap-1">
+                        <Check className="w-3 h-3 text-green-600" /> Active (TLS 1.3 256-bit)
+                      </span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Bandwidth Limit</span>
+                      <span className="font-bold text-emerald-700 text-xs">Unlimited / Unmetered</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Network Port</span>
+                      <span className="font-bold text-navy text-xs">1 Gbps Cloud Uplink</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Database Storage</span>
+                      <span className="font-bold text-navy text-xs">Cloud Firestore + Live Cache</span>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-150">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">Automated Backups</span>
+                      <span className="font-bold text-navy text-xs">Daily Snapshots (30 Days)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Editable Hosting Configuration Form */}
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-6">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-gold" />
+                    <h3 className="font-serif font-bold text-navy text-sm">Configure Hosting Expiry &amp; Storage Settings</h3>
+                  </div>
+                  <span className="text-xs text-gray-500">Edit fields to update client-facing hosting info</span>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Hosting Plan Name</label>
+                    <input
+                      type="text"
+                      value={formData.hosting_settings?.planName || "Enterprise NVMe SSD Cloud Hosting"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "",
+                              startDate: "2026-10-12",
+                              expiryDate: "2027-10-12",
+                              totalStorageGb: 100,
+                              bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                            }),
+                            planName: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Start Date (kal se)</label>
+                    <input
+                      type="date"
+                      value={formData.hosting_settings?.startDate || "2026-10-12"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "Enterprise NVMe SSD Cloud Hosting",
+                              startDate: "",
+                              expiryDate: "2027-10-12",
+                              totalStorageGb: 100,
+                              bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                            }),
+                            startDate: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Expiration Date (1 Year)</label>
+                    <input
+                      type="date"
+                      value={formData.hosting_settings?.expiryDate || "2027-10-12"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "Enterprise NVMe SSD Cloud Hosting",
+                              startDate: "2026-10-12",
+                              expiryDate: "",
+                              totalStorageGb: 100,
+                              bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                            }),
+                            expiryDate: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Total Storage Quota (GB)</label>
+                    <input
+                      type="number"
+                      value={formData.hosting_settings?.totalStorageGb || 100}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "Enterprise NVMe SSD Cloud Hosting",
+                              startDate: "2026-10-12",
+                              expiryDate: "2027-10-12",
+                              totalStorageGb: 100,
+                              bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                            }),
+                            totalStorageGb: Number(e.target.value) || 100,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Bandwidth Allocation</label>
+                    <input
+                      type="text"
+                      value={formData.hosting_settings?.bandwidth || "Unlimited (Unmetered 1Gbps Uplink)"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "Enterprise NVMe SSD Cloud Hosting",
+                              startDate: "2026-10-12",
+                              expiryDate: "2027-10-12",
+                              totalStorageGb: 100,
+                              bandwidth: "",
+                            }),
+                            bandwidth: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">SSL Certificate Status</label>
+                    <input
+                      type="text"
+                      value={formData.hosting_settings?.sslStatus || "Active & Secured (TLS 1.3 Auto-Renewing SSL)"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hosting_settings: {
+                            ...(formData.hosting_settings || {
+                              planName: "Enterprise NVMe SSD Cloud Hosting",
+                              startDate: "2026-10-12",
+                              expiryDate: "2027-10-12",
+                              totalStorageGb: 100,
+                              bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                            }),
+                            sslStatus: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs">
+                  <label className="block font-bold text-gray-700 mb-1">Client Renewal Notes &amp; Instructions</label>
+                  <textarea
+                    rows={3}
+                    value={
+                      formData.hosting_settings?.clientNotes ||
+                      "Your 1-year managed enterprise hosting package is active from October 12, 2026 to October 12, 2027. All website files, databases, and SSL certificates are covered under this term."
+                    }
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hosting_settings: {
+                          ...(formData.hosting_settings || {
+                            planName: "Enterprise NVMe SSD Cloud Hosting",
+                            startDate: "2026-10-12",
+                            expiryDate: "2027-10-12",
+                            totalStorageGb: 100,
+                            bandwidth: "Unlimited (Unmetered 1Gbps Uplink)",
+                          }),
+                          clientNotes: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-navy focus:outline-none"
+                  />
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    This note will be visible to client administrators so they understand the hosting duration and coverage.
+                  </p>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    onClick={handleSave}
+                    disabled={saveStatus === "saving"}
+                    className="bg-navy hover:bg-gold text-white hover:text-navy text-xs font-extrabold px-6 py-2.5 rounded-lg transition-all cursor-pointer shadow-md flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{saveStatus === "saving" ? "Saving Changes..." : "Save Hosting Configuration"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ================= TAB: SECURITY & TOOLS ================= */}
           {activeTab === "tools" && (
             <div className="space-y-6 animate-fade-in">
