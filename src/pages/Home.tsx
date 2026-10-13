@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { motion } from "motion/react";
+import { InViewSection } from "../components/InViewSection";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
 const QuoteModal = React.lazy(() => import("../components/QuoteModal").then(m => ({ default: m.QuoteModal })));
@@ -177,31 +177,17 @@ export const Home: React.FC = () => {
             
             {/* Left Box Details */}
             <div className="space-y-3 pt-0.5">
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-gold font-bold text-xs sm:text-sm uppercase tracking-wider"
-              >
+              <p className="text-gold font-bold text-xs sm:text-sm uppercase tracking-wider">
                 {heroData.eyebrow}
-              </motion.p>
+              </p>
               
-              <motion.h1 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-xl sm:text-2xl md:text-[1.75rem] lg:text-[1.95rem] font-serif font-black leading-[1.22] text-white tracking-tight"
-              >
+              <h1 className="text-xl sm:text-2xl md:text-[1.75rem] lg:text-[1.95rem] font-serif font-black leading-[1.22] text-white tracking-tight">
                 {heroData.headline}
-              </motion.h1>
+              </h1>
               
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-xl"
-              >
+              <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-xl">
                 {heroData.subText}
-              </motion.p>
+              </p>
               
               {/* Bullets lists */}
               <ul className="space-y-1.5 pt-0.5">
@@ -347,12 +333,8 @@ export const Home: React.FC = () => {
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y-0 divide-x-0 md:divide-x divide-white/10">
             {statsList.map((stat, idx) => (
-              <motion.div 
+              <div 
                 key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.08 }}
                 className="text-center px-4"
               >
                 <h3 className="text-4xl md:text-5xl font-serif font-black text-gold mb-1">
@@ -361,7 +343,7 @@ export const Home: React.FC = () => {
                 <p className="text-white/90 font-bold tracking-widest uppercase text-xs">
                   {stat.label}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -369,53 +351,42 @@ export const Home: React.FC = () => {
 
       {/* ================= PREMIUM SERVICES GRID Restoring (wD.js restored) ================= */}
       <section 
-        className="relative py-24 overflow-hidden"
-        style={{
-          backgroundImage: "url('/bg-process.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
+        className="relative py-24 overflow-hidden bg-[#f7f4ef]"
         id="home-premium-book-production"
       >
+        <img 
+          src="/bg-process.webp" 
+          alt="" 
+          loading="lazy" 
+          decoding="async" 
+          className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none select-none -z-0" 
+        />
         <div className="absolute inset-0 bg-[#f7f4ef]/94 z-0" />
         
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="text-center mb-16">
-            <motion.span 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+            <span 
               className="inline-block text-gold text-sm font-bold uppercase tracking-widest mb-3"
             >
               Our Services
-            </motion.span>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            </span>
+            <h2 
               className="text-3xl md:text-5xl font-serif font-black text-navy leading-tight"
             >
               Upgrade to Premium Book Production
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            </h2>
+            <p 
               className="text-gray-500 text-sm md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed"
             >
               Everything you need to take your manuscript from idea to bestseller - under one roof.
-            </motion.p>
+            </p>
           </div>
 
           {/* Catalog grid blocks (bD equivalent) */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {premiumServices.map((service, idx) => (
-              <motion.div 
+              <div 
                 key={service.slug}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.08 }}
                 className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col justify-between"
                 id={`premium-service-card-${service.slug}`}
               >
@@ -461,7 +432,7 @@ export const Home: React.FC = () => {
                     View Details <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
           
@@ -477,37 +448,33 @@ export const Home: React.FC = () => {
       </section>
 
       {/* ================= DEEP BRAND PROCESSRestoring (cO.js restored) ================= */}
+      {/* ================= DEEP BRAND PROCESSRestoring (cO.js restored) ================= */}
       <section 
         className="relative py-24 text-white overflow-hidden bg-navy"
-        style={{
-          backgroundImage: "url('/bg-process.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
         id="home-brand-process-section"
       >
+        <img 
+          src="/bg-process.webp" 
+          alt="" 
+          loading="lazy" 
+          decoding="async" 
+          className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none select-none -z-0" 
+        />
         <div className="absolute inset-0 bg-navy/85 z-0" />
         
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="text-center mb-16">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            <h2 
               className="text-4xl md:text-5xl font-serif font-bold text-white tracking-tight"
             >
               Our Process
-            </motion.h2>
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {processSteps.map((step, idx) => (
-              <motion.div 
+              <div 
                 key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
                 className="bg-white/10 backdrop-blur-sm rounded-xl p-8 hover:bg-white/15 transition-all duration-300 border border-white/10 relative overflow-hidden group"
                 id={`process-card-${idx}`}
               >
@@ -521,50 +488,45 @@ export const Home: React.FC = () => {
                 <p className="text-gray-300 text-sm font-medium leading-relaxed">
                   {step.desc}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ================= EVERY VOICE HAS A GENRE (oO.js restored via GenreSection) ================= */}
-      <React.Suspense fallback={<div className="h-64 bg-navy" />}>
-        <GenreSection />
-      </React.Suspense>
+      <InViewSection minHeight="450px" placeholder={<div className="h-64 bg-navy" />}>
+        <React.Suspense fallback={<div className="h-64 bg-navy" />}>
+          <GenreSection />
+        </React.Suspense>
+      </InViewSection>
 
       {/* ================= PORTFOLIO MULTI FLOW SLIDERS ================= */}
-      <React.Suspense fallback={<div className="h-64 bg-[#f7f4ed]" />}>
-        <BookCarousel />
-      </React.Suspense>
+      <InViewSection minHeight="450px" placeholder={<div className="h-64 bg-[#f7f4ed]" />}>
+        <React.Suspense fallback={<div className="h-64 bg-[#f7f4ed]" />}>
+          <BookCarousel />
+        </React.Suspense>
+      </InViewSection>
 
       {/* ================= MEET OUR PUBLISHED AUTHORS (pO.js restored) ================= */}
       <section className="py-24 bg-white text-navy" id="meet-published-authors">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-14">
-            <motion.span 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+            <span 
               className="inline-block text-gold text-sm font-bold uppercase tracking-widest mb-3"
             >
               Published Authors
-            </motion.span>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            </span>
+            <h2 
               className="text-3xl md:text-5xl font-serif font-black leading-tight text-navy"
             >
               Meet Our Published Authors
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+            </h2>
+            <p 
               className="text-gray-500 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed mt-3"
             >
               Talented writers from across America who trusted us to bring their stories to the world.
-            </motion.p>
+            </p>
           </div>
 
           {/* Verified Authors circular list */}
@@ -577,12 +539,8 @@ export const Home: React.FC = () => {
               { name: "Carlos Rivera", genre: "Business Writer", img: "/author-5.webp" },
               { name: "Yuki Tanaka", genre: "Literary Fiction", img: "/author-6.webp" }
             ].map((author, idx) => (
-              <motion.div 
+              <div 
                 key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
                 className="flex flex-col items-center text-center group cursor-pointer"
                 onClick={() => openConsultation("published-author-consult")}
                 id={`author-profile-${idx}`}
@@ -591,12 +549,12 @@ export const Home: React.FC = () => {
                   <img 
                     src={author.img} 
                     alt={author.name} 
-                    loading="lazy"
-                    decoding="async"
-                    width={96}
-                    height={96}
-                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg group-hover:border-gold transition-colors duration-300"
-                    referrerPolicy="no-referrer"
+                    loading="lazy" 
+                    decoding="async" 
+                    width={96} 
+                    height={96} 
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg group-hover:border-gold transition-colors duration-300" 
+                    referrerPolicy="no-referrer" 
                   />
                   <div className="absolute inset-0 rounded-full ring-2 ring-gold/0 group-hover:ring-gold/60 transition-all duration-300" />
                 </div>
@@ -606,7 +564,7 @@ export const Home: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-0.5">
                   Author, {author.genre}
                 </p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -618,32 +576,22 @@ export const Home: React.FC = () => {
         
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="text-center max-w-4xl mx-auto mb-16">
-            <motion.span 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
+            <span 
               className="inline-block text-gold text-sm font-bold uppercase tracking-widest mb-3 animate-pulse"
             >
               Goal-Oriented Book Strategy
-            </motion.span>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+            </span>
+            <h2 
               className="text-3xl md:text-5xl font-serif font-black leading-tight text-white mb-4"
             >
               Connect With Our Reputable Book Marketing Experts For A Goal-Oriented Strategy That Complements Your Writing
-            </motion.h2>
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {TESTIMONIALS.map((testimonial, idx) => (
-              <motion.div 
+              <div 
                 key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.2 }}
                 className="bg-white text-navy rounded-xl p-8 shadow-2xl relative flex flex-col justify-between"
                 id={`expert-quote-card-${idx}`}
               >
@@ -662,12 +610,12 @@ export const Home: React.FC = () => {
                   <img 
                     src={testimonial.avatar} 
                     alt={testimonial.name} 
-                    loading="lazy"
-                    decoding="async"
-                    width={56}
-                    height={56}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-gold shadow-md"
-                    referrerPolicy="no-referrer"
+                    loading="lazy" 
+                    decoding="async" 
+                    width={56} 
+                    height={56} 
+                    className="w-14 h-14 rounded-full object-cover border-2 border-gold shadow-md" 
+                    referrerPolicy="no-referrer" 
                   />
                   <div>
                     <h4 className="font-bold font-serif text-base text-navy">
@@ -678,7 +626,7 @@ export const Home: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -686,26 +634,23 @@ export const Home: React.FC = () => {
 
       {/* ================= ABOUT US / MADE IN AMERICA SECTION ================= */}
       <section 
-        className="relative py-24 overflow-hidden"
-        style={{
-          backgroundImage: "url('/bg-concerned.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
+        className="relative py-24 overflow-hidden bg-[#f7f4ef]"
         id="home-about-us-section"
       >
+        <img 
+          src="/bg-concerned.webp" 
+          alt="" 
+          loading="lazy" 
+          decoding="async" 
+          className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none select-none -z-0" 
+        />
         <div className="absolute inset-0 bg-[#f7f4ef]/95 z-0" />
         
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             
             {/* Left Box: Story & Guarantees */}
-            <motion.div 
-              initial={{ opacity: 0, x: -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-block text-gold text-xs font-bold uppercase tracking-widest bg-navy px-3.5 py-1.5 rounded-sm shadow-sm">
                   About Beyond Book Publishing
@@ -761,15 +706,10 @@ export const Home: React.FC = () => {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
-            </motion.div>
+            </div>
 
             {/* Right Side Visual with American Flag ornament */}
-            <motion.div 
-              initial={{ opacity: 0, x: 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
+            <div className="relative">
               {/* CSS American flag stripes */}
               <div className="absolute -top-4 -left-4 w-full h-3 flex gap-0.5 rounded overflow-hidden z-10 shadow-sm">
                 {Array.from({ length: 13 }).map((_, idx) => (
@@ -822,7 +762,7 @@ export const Home: React.FC = () => {
                 <div className="flex text-gold text-xs">★★★★★</div>
                 <span className="text-xs font-bold text-navy">98% Satisfaction</span>
               </div>
-            </motion.div>
+            </div>
 
           </div>
         </div>
@@ -917,13 +857,15 @@ export const Home: React.FC = () => {
       {/* ================= BOTTOM DESPERATE HERO CALL CTA (lO.js restored) ================= */}
       <section 
         className="relative py-20 overflow-hidden text-center bg-gold"
-        style={{
-          backgroundImage: "url('/bg-cta.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
         id="home-need-a-way-out-cta"
       >
+        <img 
+          src="/bg-cta.webp" 
+          alt="" 
+          loading="lazy" 
+          decoding="async" 
+          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none -z-0" 
+        />
         <div className="absolute inset-0 bg-gold/92 z-0" />
         <div 
           className="absolute inset-0 opacity-10" 
@@ -934,10 +876,7 @@ export const Home: React.FC = () => {
         />
 
         <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
+          <div 
             className="max-w-3xl mx-auto space-y-6"
           >
             <h2 className="text-5xl md:text-6xl font-serif font-black text-navy leading-tight">
@@ -952,7 +891,7 @@ export const Home: React.FC = () => {
             >
               Get A Free Consultation
             </button>
-          </motion.div>
+          </div>
         </div>
       </section>
 

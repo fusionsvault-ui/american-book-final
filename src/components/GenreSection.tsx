@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
 import { QuoteModal } from "./QuoteModal";
 
 export interface GenreItem {
@@ -87,41 +86,28 @@ export const GenreSection: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Header Text */}
         <div className="text-center mb-16">
-          <motion.span
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+          <span
             className="inline-block text-gold text-sm font-bold uppercase tracking-widest mb-3 animate-pulse"
           >
             Every Voice Has a Genre
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          </span>
+          <h2
             className="text-4xl md:text-5xl font-serif font-bold text-white leading-tight"
           >
             We Write Across Every Publishing Genre
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          </h2>
+          <p
             className="text-gray-400 text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed"
           >
             From faith-driven biblical works to HR leadership guides and illustrated art books, our expert ghostwriters master every niche so your book fits perfectly on any shelf.
-          </motion.p>
+          </p>
         </div>
 
         {/* Grid cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {GENRE_DATA.map((genre, idx) => (
-            <motion.div
+          {GENRE_DATA.map((genre) => (
+            <div
               key={genre.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.07 }}
               onClick={() => setModalOpen(true)}
               className="group relative rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-end"
               style={{ minHeight: "280px" }}
@@ -179,7 +165,7 @@ export const GenreSection: React.FC = () => {
                   Start Writing &rarr;
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 

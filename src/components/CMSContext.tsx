@@ -263,10 +263,23 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return null;
   };
 
+  const fixWebp = (url?: string): string => {
+    if (!url) return "";
+    if (url.includes("writing-desk-CeaHrFGY.png")) return url.replace(".png", ".webp");
+    if (url.includes("hero-1-BCRMWL0r.png")) return url.replace(".png", ".webp");
+    if (url.includes("hero-2-CMx4LXdS.png")) return url.replace(".png", ".webp");
+    if (url.includes("bg-hero.png")) return url.replace(".png", ".webp");
+    if (url.includes("bg-cta.png")) return url.replace(".png", ".webp");
+    return url;
+  };
+
   const mergeCMSData = (remote: Partial<CMSData>, base: CMSData = fallbackCMSData): CMSData => {
     return {
       ...base,
       ...remote,
+      hero_image_url: fixWebp(remote.hero_image_url) || base.hero_image_url,
+      hero_bg_image: fixWebp(remote.hero_bg_image) || base.hero_bg_image,
+      about_intro_img: fixWebp(remote.about_intro_img) || base.about_intro_img,
       blogs: remote.blogs && remote.blogs.length > 0 ? remote.blogs : base.blogs,
       services: remote.services && remote.services.length > 0 ? remote.services : base.services,
       pricingPackages: remote.pricingPackages || base.pricingPackages,
@@ -420,12 +433,42 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    // Schedule background Firestore initialization without blocking main thread
-    const timerId = setTimeout(initFirestoreSync, 200);
+    // For admin pages, connect immediately. For public visitors, defer to idle/interaction
+    const isAdmin = typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+    let timerId: any;
+    let cleanupListeners: (() => void) | undefined;
+
+    if (isAdmin) {
+      timerId = setTimeout(initFirestoreSync, 50);
+    } else if (typeof window !== "undefined") {
+      // Initialize on first user interaction or after 7 seconds idle
+      let triggered = false;
+      const trigger = () => {
+        if (triggered || isCancelled) return;
+        triggered = true;
+        initFirestoreSync();
+        window.removeEventListener("scroll", trigger);
+        window.removeEventListener("touchstart", trigger);
+        window.removeEventListener("click", trigger);
+      };
+
+      window.addEventListener("scroll", trigger, { passive: true, once: true });
+      window.addEventListener("touchstart", trigger, { passive: true, once: true });
+      window.addEventListener("click", trigger, { passive: true, once: true });
+
+      cleanupListeners = () => {
+        window.removeEventListener("scroll", trigger);
+        window.removeEventListener("touchstart", trigger);
+        window.removeEventListener("click", trigger);
+      };
+
+      timerId = setTimeout(trigger, 7000);
+    }
 
     return () => {
       isCancelled = true;
-      clearTimeout(timerId);
+      if (timerId) clearTimeout(timerId);
+      if (cleanupListeners) cleanupListeners();
       if (unsub) unsub();
     };
   }, []);

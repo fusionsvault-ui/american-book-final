@@ -31,6 +31,20 @@ const HOST = hostArgIdx !== -1 ? process.argv[hostArgIdx + 1] : "0.0.0.0";
 
 const UPSTREAM_URL = "https://american-book-founderszip--devwork65.replit.app";
 
+// Intercept requests for .png that have a modern .webp equivalent to eliminate 90%+ payload
+app.use((req, res, next) => {
+  const ext = path.extname(req.path).toLowerCase();
+  if (ext === ".png") {
+    const webpPath = req.path.replace(/\.png$/, ".webp");
+    const localWebpDist = path.join(process.cwd(), "dist", webpPath);
+    const localWebpPublic = path.join(process.cwd(), "public", webpPath);
+    if (fs.existsSync(localWebpDist) || fs.existsSync(localWebpPublic)) {
+      return res.redirect(301, webpPath);
+    }
+  }
+  next();
+});
+
 // Serve public assets directly with proper cache headers (7-day client cache)
 app.use(
   express.static(path.join(process.cwd(), "public"), {
@@ -49,7 +63,7 @@ app.use((req, res, next) => {
   if (isImageAsset || isHashedAsset) {
     const localDistPath = path.join(process.cwd(), "dist", req.path);
     const localPublicPath = path.join(process.cwd(), "public", req.path);
-    
+
     if (!fs.existsSync(localDistPath) && !fs.existsSync(localPublicPath)) {
       console.log(`[ASSET REDIRECT] Redirecting ${req.path} to upstream: ${UPSTREAM_URL}${req.path}`);
       return res.redirect(302, `${UPSTREAM_URL}${req.path}`);
@@ -198,7 +212,7 @@ const fallbackCMSData = {
   hero_phone: "+1 (800) 555-0199",
   hero_ratingText: "Rated 9.1 out of 10",
   hero_ratingCount: "3,428",
-  hero_image_url: "/assets/writing-desk-CeaHrFGY.png",
+  hero_image_url: "/assets/writing-desk-CeaHrFGY.webp",
   hero_image_alt: "Beyond Book Publishing Editorial Desk",
   about_intro_img: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&q=80&w=600",
   about_intro_img_alt: "Stack of hardcover classical lit books",

@@ -48,15 +48,43 @@ const EmblaSliderRow: React.FC<SliderProps> = ({ books, reverse = false }) => {
 
   useEffect(() => {
     if (!emblaApi) return;
-    const interval = setInterval(() => {
-      if (reverse) {
-        emblaApi.scrollPrev();
-      } else {
-        emblaApi.scrollNext();
-      }
-    }, 3000);
+    let interval: any = null;
 
-    return () => clearInterval(interval);
+    const startTimer = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        if (document.hidden) return;
+        if (reverse) {
+          emblaApi.scrollPrev();
+        } else {
+          emblaApi.scrollNext();
+        }
+      }, 4500);
+    };
+
+    const stopTimer = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    // Use IntersectionObserver on the embla container to only scroll when user is actually looking at it
+    const node = emblaApi.rootNode();
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        startTimer();
+      } else {
+        stopTimer();
+      }
+    }, { threshold: 0.1 });
+
+    if (node) observer.observe(node);
+
+    return () => {
+      stopTimer();
+      observer.disconnect();
+    };
   }, [emblaApi, reverse]);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);

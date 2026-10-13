@@ -28,6 +28,13 @@ export const Layout: React.FC<LayoutProps> = ({
   canonicalUrl,
 }) => {
   const { data: cms } = useCMS();
+  const [showChat, setShowChat] = React.useState(false);
+
+  useEffect(() => {
+    // Defer Chat Assistant loading to idle so it never blocks mobile first paint
+    const timer = setTimeout(() => setShowChat(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Dynamic favicon update
   useEffect(() => {
@@ -259,9 +266,11 @@ export const Layout: React.FC<LayoutProps> = ({
 
       {/* Floating Interactive Handlers */}
       <FloatingCTA />
-      <React.Suspense fallback={null}>
-        <ChatAssistant />
-      </React.Suspense>
+      {showChat && (
+        <React.Suspense fallback={null}>
+          <ChatAssistant />
+        </React.Suspense>
+      )}
     </div>
   );
 };
