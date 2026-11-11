@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem, HostingSettings } from "../types";
+import { BlogPostItem, PortfolioBookItem, PricingPackageItem, TestimonialItem, CustomPageItem, HostingSettings, AgentProfileSettings } from "../types";
 import { BLOG_POSTS, PORTFOLIO_BOOKS, PRICING_PACKAGES, TESTIMONIALS } from "../data/websiteData";
 import { SERVICES, ServiceItem } from "../data/servicesData";
 
@@ -118,6 +118,7 @@ export interface CMSData {
   portfolioBooks: PortfolioBookItem[];
   custom_pages?: CustomPageItem[];
   hosting_settings?: HostingSettings;
+  agent_profile?: AgentProfileSettings;
 }
 
 export const fallbackCMSData: CMSData = {
@@ -242,6 +243,14 @@ export const fallbackCMSData: CMSData = {
     providerName: "Beyond Cloud Hosting Infrastructure",
     clientNotes: "1-Year Dedicated Managed Hosting Package. Daily automated backups and DDoS protection active.",
   },
+  agent_profile: {
+    name: "Sarah Jenkins",
+    role: "Senior Publishing Consultant",
+    department: "Author Advisory Guild",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150",
+    welcomeMessage: "Hello! Welcome to Beyond Book Publishing. I'm your dedicated publishing consultant. Tell me about your book idea or manuscript!",
+    statusText: "Online & ready to assist",
+  },
 };
 
 export interface CMSContextType {
@@ -302,6 +311,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       custom_pages: Array.isArray(remote.custom_pages) ? remote.custom_pages : (base.custom_pages || []),
       header_show_phone: remote.header_show_phone !== undefined ? remote.header_show_phone : true,
       hosting_settings: remote.hosting_settings ? { ...base.hosting_settings, ...remote.hosting_settings } : base.hosting_settings,
+      agent_profile: remote.agent_profile ? { ...base.agent_profile, ...remote.agent_profile } : base.agent_profile,
     };
   };
 

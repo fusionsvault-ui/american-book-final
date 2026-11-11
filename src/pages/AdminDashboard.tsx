@@ -65,6 +65,7 @@ import {
   FilePlus,
   MapPin,
   User,
+  UserCheck,
   Laptop,
   ShieldAlert,
   ShieldCheck,
@@ -212,6 +213,12 @@ export const AdminDashboard: React.FC = () => {
   const [liveVisitorCount, setLiveVisitorCount] = useState(1);
   const [adminReplyText, setAdminReplyText] = useState("");
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [chatSearchQuery, setChatSearchQuery] = useState("");
+  const [chatFilterTab, setChatFilterTab] = useState<"all" | "online">("all");
+  const [chatRightTab, setChatRightTab] = useState<"visitor" | "agent_profile">("visitor");
+  const [agentProfileSavedNotice, setAgentProfileSavedNotice] = useState(false);
+  const [leadConvertedNotice, setLeadConvertedNotice] = useState(false);
+
 
   // Sync formData with cms changes
   useEffect(() => {
@@ -330,22 +337,30 @@ export const AdminDashboard: React.FC = () => {
       if (!sessSnap.empty) {
         for (const doc of sessSnap.docs) {
           const sData: any = doc.data();
-          if (sessionMap[doc.id]) {
-            sessionMap[doc.id].visitorName = sData.visitorName || sessionMap[doc.id].visitorName;
-            sessionMap[doc.id].email = sData.email || "";
-            sessionMap[doc.id].phone = sData.phone || "";
-          } else {
-            sessionMap[doc.id] = {
-              sessionId: doc.id,
-              visitorName: sData.visitorName || `Visitor #${doc.id.slice(-4)}`,
-              email: sData.email || "",
-              phone: sData.phone || "",
-              messages: [],
-              lastMessage: "Active on site",
-              lastTimestamp: sData.lastSeen || new Date().toISOString(),
-              isOnline: true,
-            };
-          }
+          const existing = sessionMap[doc.id];
+          const isOnline = sData.lastSeen
+            ? Date.now() - new Date(sData.lastSeen).getTime() < 180000
+            : true;
+          sessionMap[doc.id] = {
+            sessionId: doc.id,
+            visitorName: sData.visitorName || existing?.visitorName || `Visitor #${doc.id.slice(-4)}`,
+            email: sData.email || existing?.email || "",
+            phone: sData.phone || existing?.phone || "",
+            ip: sData.ip || existing?.ip || "Online",
+            country: sData.country || existing?.country || "Visitor",
+            countryCode: sData.countryCode || existing?.countryCode || "",
+            flag: sData.flag || existing?.flag || "🌐",
+            city: sData.city || existing?.city || "",
+            region: sData.region || existing?.region || "",
+            browser: sData.browser || existing?.browser || "Web Browser",
+            device: sData.device || existing?.device || "Desktop",
+            currentPage: sData.currentPage || existing?.currentPage || "/",
+            notes: sData.notes || existing?.notes || "",
+            messages: existing?.messages || [],
+            lastMessage: existing?.lastMessage || sData.lastMessage || "Active on site",
+            lastTimestamp: existing?.lastTimestamp || sData.lastSeen || new Date().toISOString(),
+            isOnline,
+          };
         }
       }
 
@@ -568,6 +583,60 @@ export const AdminDashboard: React.FC = () => {
       setIsSendingReply(false);
     }
   };
+
+  const handleConvertChatToLead = async (session: ChatSessionItem) => {
+    const leadId = `lead_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const now = new Date().toISOString();
+    const newLead: LeadItem = {
+      id: leadId,
+      name: session.visitorName || `Chat Visitor #${session.sessionId.slice(-4)}`,
+      email: session.email || `chat_${session.sessionId.slice(-4)}@visitor.com`,
+      phone: session.phone || "",
+      message: `Inquiry via Live Chat messenger. Country: ${session.country} (${session.city || ""}), IP: ${session.ip}. Last message: ${session.lastMessage || ""}`,
+      source: "live_chat",
+      timestamp: now,
+    };
+
+    try {
+      const { db } = await import("../lib/firebase");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "leads", leadId), newLead);
+    } catch (e) {}
+
+    try {
+      await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newLead),
+      });
+    } catch (e) {}
+
+    setLeadConvertedNotice(true);
+    setTimeout(() => setLeadConvertedNotice(false), 2500);
+    fetchLeads();
+  };
+
+  const handleSaveAgentProfile = async (profileData: any) => {
+    const updated: CMSData = {
+      ...formData,
+      agent_profile: {
+        ...(formData.agent_profile || {
+          name: "Sarah Jenkins",
+          role: "Senior Publishing Consultant",
+          avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150",
+          welcomeMessage: "Hello! Welcome to Beyond Book Publishing. I'm your dedicated publishing consultant. Tell me about your book idea or manuscript!",
+          statusText: "Online & replying instantly",
+        }),
+        ...profileData,
+      },
+    };
+    setFormData(updated);
+    await handleSaveAll(updated);
+    setAgentProfileSavedNotice(true);
+    setTimeout(() => setAgentProfileSavedNotice(false), 2500);
+  };
+
+
 
   // ================= CUSTOM PAGES MANAGEMENT =================
   const handleOpenNewCustomPage = () => {
@@ -2340,130 +2409,249 @@ export const AdminDashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-serif font-black text-navy">Live Chat &amp; Visitor Messenger</h1>
-                    <span className="bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       {liveVisitorCount} Online Now
                     </span>
                   </div>
                   <p className="text-gray-500 text-xs mt-1">
-                    See visitors browsing the website and send direct consultant replies in real time.
+                    Manage real-time visitor conversations, view accurate geolocations, and configure your live support agent profile.
                   </p>
                 </div>
-                <button
-                  onClick={fetchChatSessions}
-                  className="bg-gray-100 hover:bg-gray-200 text-navy text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh Chats</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {agentProfileSavedNotice && (
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center gap-1 animate-fade-in">
+                      <Check className="w-3.5 h-3.5" /> Agent Profile Synced!
+                    </span>
+                  )}
+                  {leadConvertedNotice && (
+                    <span className="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-1 animate-fade-in">
+                      <Check className="w-3.5 h-3.5" /> Added to Leads!
+                    </span>
+                  )}
+                  <button
+                    onClick={fetchChatSessions}
+                    className="bg-gray-100 hover:bg-gray-200 text-navy text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
               </div>
 
               {/* Three-Column Tawk.to Messenger Layout */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 lg:grid-cols-12 min-h-[580px] overflow-hidden">
-                {/* Left Column: Chat Sessions List (3 cols) */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 lg:grid-cols-12 min-h-[620px] overflow-hidden">
+                {/* Left Column: Chat Sessions List & Filter (3 cols) */}
                 <div className="lg:col-span-3 border-r border-gray-200 flex flex-col bg-gray-50/50">
-                  <div className="p-3.5 border-b border-gray-200 bg-white font-bold text-xs text-navy flex items-center justify-between">
-                    <span>Active Conversations</span>
-                    <span className="text-gray-400 font-mono text-[11px]">{chatSessions.length} total</span>
+                  <div className="p-3 border-b border-gray-200 bg-white space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-navy">
+                      <span>Conversations</span>
+                      <span className="text-gray-400 font-mono text-[11px]">{chatSessions.length} total</span>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={chatSearchQuery}
+                        onChange={(e) => setChatSearchQuery(e.target.value)}
+                        placeholder="Search name, country, IP..."
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-8 pr-2.5 py-1.5 text-xs outline-none focus:border-navy text-gray-700"
+                      />
+                    </div>
+
+                    {/* Filter Tabs */}
+                    <div className="flex gap-1 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setChatFilterTab("all")}
+                        className={`flex-1 text-[11px] font-bold py-1 rounded-md transition-colors cursor-pointer ${
+                          chatFilterTab === "all" ? "bg-navy text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        All ({chatSessions.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChatFilterTab("online")}
+                        className={`flex-1 text-[11px] font-bold py-1 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                          chatFilterTab === "online" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span>Online ({chatSessions.filter((s) => s.isOnline).length})</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                  {/* Sessions List */}
+                  <div className="flex-1 overflow-y-auto divide-y divide-gray-100 max-h-[520px]">
                     {chatSessions.length === 0 ? (
                       <div className="p-8 text-center text-gray-400 text-xs">
-                        No active visitor sessions recorded yet. When a visitor opens the chat bubble, their conversation and verified IP will appear here!
+                        No active visitor sessions recorded yet. When a visitor opens the website chat, their conversation and verified location will appear here!
                       </div>
                     ) : (
-                      chatSessions.map((session) => {
-                        const isSelected = session.sessionId === activeChatSessionId;
-                        return (
-                          <button
-                            key={session.sessionId}
-                            onClick={() => setActiveChatSessionId(session.sessionId)}
-                            className={`w-full text-left p-3 transition-colors cursor-pointer block ${
-                              isSelected ? "bg-white border-l-4 border-[#2271b1] shadow-xs" : "hover:bg-gray-100/70"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-navy text-xs flex items-center gap-1.5 truncate">
-                                <span className="text-sm">{session.flag || "🇺🇸"}</span>
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${session.isOnline ? "bg-green-500 animate-pulse" : "bg-gray-300"}`} />
-                                <span className="truncate">{session.visitorName || `Visitor #${session.sessionId.slice(-4)}`}</span>
-                              </span>
-                              <span className="text-[10px] text-gray-400 flex-shrink-0">
-                                {session.lastTimestamp ? new Date(session.lastTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-gray-500 truncate leading-snug">
-                              {session.lastMessage || "Started chat session"}
-                            </p>
-                            <div className="flex items-center justify-between mt-1 text-[10px] text-gray-400">
-                              <span className="font-mono">{session.ip || "72.229.28.185"}</span>
-                              <span>{session.city || "New York"}</span>
-                            </div>
-                          </button>
-                        );
-                      })
+                      chatSessions
+                        .filter((session) => {
+                          if (chatFilterTab === "online" && !session.isOnline) return false;
+                          if (!chatSearchQuery.trim()) return true;
+                          const q = chatSearchQuery.toLowerCase();
+                          return (
+                            (session.visitorName && session.visitorName.toLowerCase().includes(q)) ||
+                            (session.email && session.email.toLowerCase().includes(q)) ||
+                            (session.country && session.country.toLowerCase().includes(q)) ||
+                            (session.city && session.city.toLowerCase().includes(q)) ||
+                            (session.ip && session.ip.toLowerCase().includes(q)) ||
+                            (session.lastMessage && session.lastMessage.toLowerCase().includes(q))
+                          );
+                        })
+                        .map((session) => {
+                          const isSelected = session.sessionId === activeChatSessionId;
+                          return (
+                            <button
+                              key={session.sessionId}
+                              onClick={() => setActiveChatSessionId(session.sessionId)}
+                              className={`w-full text-left p-3 transition-colors cursor-pointer block ${
+                                isSelected ? "bg-white border-l-4 border-navy shadow-xs" : "hover:bg-gray-100/70"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-navy text-xs flex items-center gap-1.5 truncate">
+                                  <span className="text-base">{session.flag || "🌐"}</span>
+                                  <span
+                                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                      session.isOnline ? "bg-emerald-500 animate-pulse" : "bg-gray-300"
+                                    }`}
+                                  />
+                                  <span className="truncate">{session.visitorName || `Visitor #${session.sessionId.slice(-4)}`}</span>
+                                </span>
+                                <span className="text-[10px] text-gray-400 flex-shrink-0">
+                                  {session.lastTimestamp
+                                    ? new Date(session.lastTimestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                                    : ""}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-500 truncate leading-snug">
+                                {session.lastMessage || "Started chat session"}
+                              </p>
+                              <div className="flex items-center justify-between mt-1.5 text-[10px] text-gray-400">
+                                <span className="font-mono bg-gray-100 px-1 py-0.2 rounded text-[10px]">
+                                  {session.ip || "Online"}
+                                </span>
+                                <span className="font-medium text-gray-600 truncate max-w-[120px]">
+                                  {session.city ? `${session.city}, ` : ""}{session.country || "Visitor"}
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })
                     )}
                   </div>
                 </div>
 
-                {/* Middle Column: Chat Conversation & Direct Reply Box (6 cols) */}
+                {/* Middle Column: Chat Conversation Thread & Direct Reply (6 cols) */}
                 <div className="lg:col-span-6 flex flex-col justify-between bg-white border-r border-gray-200">
                   {currentChatSession ? (
                     <>
                       {/* Chat Header */}
                       <div className="p-3.5 border-b border-gray-200 flex items-center justify-between bg-gray-50/80">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-full bg-navy text-gold flex items-center justify-center font-bold text-xs relative">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-navy text-gold flex items-center justify-center font-bold text-xs relative flex-shrink-0">
                             <span>{currentChatSession.visitorName?.slice(0, 1) || "V"}</span>
-                            <span className="absolute -bottom-1 -right-1 text-xs">{currentChatSession.flag || "🇺🇸"}</span>
+                            <span className="absolute -bottom-1 -right-1 text-sm">{currentChatSession.flag || "🌐"}</span>
                           </div>
                           <div>
                             <h4 className="font-bold text-navy text-xs flex items-center gap-2">
                               <span>{currentChatSession.visitorName}</span>
-                              <span className={`text-[10px] px-2 py-0.2 rounded font-semibold ${
-                                currentChatSession.isOnline ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"
-                              }`}>
+                              <span
+                                className={`text-[10px] px-2 py-0.2 rounded font-semibold ${
+                                  currentChatSession.isOnline
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : "bg-gray-200 text-gray-700"
+                                }`}
+                              >
                                 {currentChatSession.isOnline ? "Online" : "Away"}
                               </span>
                             </h4>
-                            <p className="text-[10px] text-gray-400 font-mono">
-                              IP: {currentChatSession.ip || "72.229.28.185"} · {currentChatSession.city || "New York"}, {currentChatSession.country || "United States"}
+                            <p className="text-[10px] text-gray-500 font-mono mt-0.5">
+                              {currentChatSession.city ? `${currentChatSession.city}, ` : ""}{currentChatSession.country || "Visitor"} · IP: {currentChatSession.ip || "Online"}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-[10px] font-bold px-2 py-1 bg-blue-50 text-[#2271b1] rounded-md">
-                            🟢 Agent Active
-                          </span>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleConvertChatToLead(currentChatSession)}
+                            className="text-[11px] font-bold bg-blue-50 text-navy hover:bg-navy hover:text-white border border-blue-200 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                            title="Save this conversation as a Lead in the CRM"
+                          >
+                            <UserCheck className="w-3.5 h-3.5 text-gold" />
+                            <span className="hidden sm:inline">Save as Lead</span>
+                          </button>
                         </div>
                       </div>
 
                       {/* Messages Flow */}
-                      <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#fbfbfb]" style={{ maxHeight: 380 }}>
-                        {(currentChatSession.messages || []).map((msg, mIdx) => {
-                          const isAgent = msg.from === "agent";
-                          return (
-                            <div
-                              key={mIdx}
-                              className={`flex flex-col ${isAgent ? "items-end" : "items-start"}`}
-                            >
-                              <span className="text-[10px] text-gray-400 mb-0.5 px-1 font-semibold flex items-center gap-1">
-                                {isAgent ? "Sarah / Consultant" : currentChatSession.visitorName}
-                                {!isAgent && <span>{currentChatSession.flag || "🇺🇸"}</span>}
-                              </span>
+                      <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#fcfcfd]" style={{ maxHeight: 380 }}>
+                        {(!currentChatSession.messages || currentChatSession.messages.length === 0) ? (
+                          <div className="text-center p-8 text-gray-400 text-xs">
+                            No messages in this conversation yet. Send the first greeting below!
+                          </div>
+                        ) : (
+                          currentChatSession.messages.map((msg, mIdx) => {
+                            const isAgent = msg.from === "agent";
+                            const agentName = formData.agent_profile?.name || "Consultant (You)";
+                            return (
                               <div
-                                className={`max-w-md p-3 rounded-2xl text-xs leading-relaxed shadow-xs ${
-                                  isAgent
-                                    ? "bg-navy text-white rounded-tr-none"
-                                    : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
-                                }`}
+                                key={mIdx}
+                                className={`flex flex-col ${isAgent ? "items-end" : "items-start"}`}
                               >
-                                {msg.text}
+                                <span className="text-[10px] text-gray-400 mb-0.5 px-1 font-semibold flex items-center gap-1">
+                                  {isAgent ? agentName : currentChatSession.visitorName}
+                                  {!isAgent && <span>{currentChatSession.flag || "🌐"}</span>}
+                                  {msg.timestamp && (
+                                    <span className="text-[9px] font-normal text-gray-400">
+                                      · {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                    </span>
+                                  )}
+                                </span>
+                                <div
+                                  className={`max-w-md p-3 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                                    isAgent
+                                      ? "bg-navy text-white rounded-tr-none"
+                                      : "bg-white text-gray-800 border border-gray-200 rounded-tl-none"
+                                  }`}
+                                >
+                                  {msg.text}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })
+                        )}
+                      </div>
+
+                      {/* Quick Canned Replies */}
+                      <div className="px-3.5 py-1.5 bg-gray-50 border-t border-gray-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex-shrink-0">
+                          Quick:
+                        </span>
+                        {[
+                          "Hello! How can I assist with your book manuscript today?",
+                          "What genre is your book project?",
+                          "We provide full publishing & you keep 100% of royalties.",
+                          "Would you like me to email you a custom publishing quote?",
+                        ].map((canned, cIdx) => (
+                          <button
+                            key={cIdx}
+                            type="button"
+                            onClick={() => setAdminReplyText(canned)}
+                            className="whitespace-nowrap text-[10px] bg-white hover:bg-gold/10 hover:border-gold/50 text-navy border border-gray-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer flex-shrink-0"
+                          >
+                            {canned.slice(0, 32)}...
+                          </button>
+                        ))}
                       </div>
 
                       {/* Admin Direct Reply Box */}
@@ -2479,16 +2667,16 @@ export const AdminDashboard: React.FC = () => {
                                 handleSendAdminReply();
                               }
                             }}
-                            placeholder="Type direct response to visitor (Press Enter to send)..."
-                            className="flex-1 border border-gray-300 rounded-xl p-2.5 text-xs outline-none focus:border-[#2271b1] resize-none text-slate-800"
+                            placeholder={`Reply as ${formData.agent_profile?.name || "Consultant"} (Press Enter to send)...`}
+                            className="flex-1 border border-gray-300 rounded-xl p-2.5 text-xs outline-none focus:border-navy resize-none text-slate-800"
                           />
                           <button
                             onClick={handleSendAdminReply}
                             disabled={isSendingReply || !adminReplyText.trim()}
-                            className="bg-[#2271b1] hover:bg-[#135e96] disabled:opacity-50 text-white font-bold px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="bg-navy hover:bg-[#1a2c42] disabled:opacity-50 text-white font-bold px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                           >
-                            <Send className="w-4 h-4" />
-                            <span>{isSendingReply ? "..." : "Reply"}</span>
+                            <Send className="w-4 h-4 text-gold" />
+                            <span>{isSendingReply ? "..." : "Send"}</span>
                           </button>
                         </div>
                         <p className="text-[10px] text-gray-400 mt-1 italic">
@@ -2504,91 +2692,331 @@ export const AdminDashboard: React.FC = () => {
                   )}
                 </div>
 
-                {/* Right Column: Tawk.to Visitor Profile & Geolocation Card (3 cols) */}
+                {/* Right Column: Two Subtabs -> [Visitor Info] & [Agent Profile (Tawk.to style)] (3 cols) */}
                 <div className="lg:col-span-3 bg-gray-50/70 p-4 flex flex-col justify-between overflow-y-auto">
-                  {currentChatSession ? (
-                    <div className="space-y-4 text-xs">
-                      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-                        <span className="font-bold text-navy text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-gold" />
-                          <span>Tawk.to Visitor Info</span>
-                        </span>
-                        <span className="text-base">{currentChatSession.flag || "🇺🇸"}</span>
-                      </div>
+                  {/* Top Tab Toggle: Visitor Info vs Agent Settings */}
+                  <div className="flex items-center gap-1 p-1 bg-gray-200/80 rounded-lg mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setChatRightTab("visitor")}
+                      className={`flex-1 text-[11px] font-bold py-1.5 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                        chatRightTab === "visitor" ? "bg-white text-navy shadow-xs" : "text-gray-600 hover:text-navy"
+                      }`}
+                    >
+                      <User className="w-3.5 h-3.5 text-gold" />
+                      <span>Visitor</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setChatRightTab("agent_profile")}
+                      className={`flex-1 text-[11px] font-bold py-1.5 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                        chatRightTab === "agent_profile" ? "bg-white text-navy shadow-xs" : "text-gray-600 hover:text-navy"
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-gold" />
+                      <span>Agent Profile</span>
+                    </button>
+                  </div>
 
-                      {/* Visitor Quick Bio */}
-                      <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs text-center space-y-1.5">
-                        <div className="w-12 h-12 bg-navy text-gold font-bold text-sm rounded-full flex items-center justify-center mx-auto relative">
-                          <span>{currentChatSession.visitorName?.slice(0, 1) || "V"}</span>
-                          <span className="absolute -bottom-1 -right-1 text-sm">{currentChatSession.flag || "🇺🇸"}</span>
+                  {/* TAB 1: VISITOR TELEMETRY & INFO */}
+                  {chatRightTab === "visitor" && (
+                    currentChatSession ? (
+                      <div className="space-y-4 text-xs">
+                        {/* Visitor Quick Bio */}
+                        <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs text-center space-y-1.5">
+                          <div className="w-12 h-12 bg-navy text-gold font-bold text-sm rounded-full flex items-center justify-center mx-auto relative">
+                            <span>{currentChatSession.visitorName?.slice(0, 1) || "V"}</span>
+                            <span className="absolute -bottom-1 -right-1 text-sm">{currentChatSession.flag || "🌐"}</span>
+                          </div>
+                          <h5 className="font-bold text-navy text-xs">{currentChatSession.visitorName}</h5>
+                          <p className="text-[10px] text-gray-400 font-mono">ID: {currentChatSession.sessionId}</p>
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>{currentChatSession.isOnline ? "Active on Website" : "Session Idle"}</span>
+                          </div>
                         </div>
-                        <h5 className="font-bold text-navy text-xs">{currentChatSession.visitorName}</h5>
-                        <p className="text-[10px] text-gray-400 font-mono">ID: {currentChatSession.sessionId}</p>
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                          <span>{currentChatSession.isOnline ? "Active on Website" : "Session Idle"}</span>
-                        </div>
-                      </div>
 
-                      {/* Verified Geolocation & IP */}
+                        {/* Verified Geolocation & IP */}
+                        <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
+                          <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">
+                            Location &amp; Network
+                          </h6>
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-500 text-[11px]">Country:</span>
+                            <span className="font-bold text-navy text-[11px] flex items-center gap-1">
+                              <span>{currentChatSession.flag || "🌐"}</span>
+                              <span>{currentChatSession.country || "Visitor Location"}</span>
+                            </span>
+                          </div>
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-500 text-[11px]">City / Region:</span>
+                            <span className="font-semibold text-gray-700 text-[11px]">
+                              {currentChatSession.city || "Detected via Client"}, {currentChatSession.countryCode || ""}
+                            </span>
+                          </div>
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-500 text-[11px]">IP Address:</span>
+                            <span className="font-mono text-navy font-bold text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
+                              {currentChatSession.ip || "Online"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Device & Active Page */}
+                        <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
+                          <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">
+                            Device &amp; Navigation
+                          </h6>
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-500 text-[11px]">Browser:</span>
+                            <span className="font-semibold text-gray-700 text-[11px]">
+                              {currentChatSession.browser || "Web Browser"}
+                            </span>
+                          </div>
+                          <div className="flex items-start justify-between">
+                            <span className="text-gray-500 text-[11px]">Device:</span>
+                            <span className="font-semibold text-gray-700 text-[11px]">
+                              {currentChatSession.device || "Desktop"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 pt-1 border-t border-gray-100">
+                            <span className="text-gray-500 text-[10px]">Active Page:</span>
+                            <span className="font-mono text-navy font-semibold text-[10px] truncate">
+                              {currentChatSession.currentPage || "/"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Contact Details */}
+                        <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
+                          <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">
+                            Author Contact
+                          </h6>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-500 text-[10px]">Email:</span>
+                            <span className="font-semibold text-navy text-[11px] truncate">
+                              {currentChatSession.email || <span className="text-gray-400 italic font-normal">Not entered yet</span>}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-gray-500 text-[10px]">Phone:</span>
+                            <span className="font-semibold text-navy text-[11px]">
+                              {currentChatSession.phone || <span className="text-gray-400 italic font-normal">Not entered yet</span>}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 1-Click Lead Converter Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleConvertChatToLead(currentChatSession)}
+                          className="w-full bg-navy hover:bg-[#1a2c42] text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-gold/40"
+                        >
+                          <UserCheck className="w-4 h-4 text-gold" />
+                          <span>Convert to Lead in CRM</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center p-6 text-gray-400 text-xs">
+                        Select a conversation to view visitor details
+                      </div>
+                    )
+                  )}
+
+                  {/* TAB 2: AGENT PROFILE SETTINGS (Tawk.to Style) */}
+                  {chatRightTab === "agent_profile" && (
+                    <div className="space-y-3.5 text-xs">
                       <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
-                        <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">Location &amp; Network</h6>
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-500 text-[11px]">Country:</span>
-                          <span className="font-bold text-navy text-[11px] flex items-center gap-1">
-                            <span>{currentChatSession.flag || "🇺🇸"}</span>
-                            <span>{currentChatSession.country || "United States"}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-500 text-[11px]">City / Region:</span>
-                          <span className="font-semibold text-gray-700 text-[11px]">{currentChatSession.city || "New York"}, {currentChatSession.region || "US"}</span>
-                        </div>
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-500 text-[11px]">IP Address:</span>
-                          <span className="font-mono text-navy font-bold text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">
-                            {currentChatSession.ip || "72.229.28.185"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Device & Active Page */}
-                      <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
-                        <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">Device &amp; Navigation</h6>
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-500 text-[11px]">Browser:</span>
-                          <span className="font-semibold text-gray-700 text-[11px]">{currentChatSession.browser || "Chrome / macOS"}</span>
-                        </div>
-                        <div className="flex items-start justify-between">
-                          <span className="text-gray-500 text-[11px]">Device:</span>
-                          <span className="font-semibold text-gray-700 text-[11px]">{currentChatSession.device || "Desktop"}</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5 pt-1 border-t border-gray-100">
-                          <span className="text-gray-500 text-[10px]">Active Page:</span>
-                          <span className="font-mono text-[#2271b1] text-[10px] truncate">{currentChatSession.currentPage || "/"}</span>
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={formData.agent_profile?.avatar || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150"}
+                            alt="Agent Avatar"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-gold flex-shrink-0"
+                          />
+                          <div>
+                            <h5 className="font-bold text-navy text-xs">
+                              {formData.agent_profile?.name || "Sarah Jenkins"}
+                            </h5>
+                            <p className="text-[10px] text-gray-500">
+                              {formData.agent_profile?.role || "Senior Publishing Consultant"}
+                            </p>
+                            <span className="inline-block mt-0.5 text-[9px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold">
+                              ● Live on Website
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Contact Details */}
-                      <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2">
-                        <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">Author Contact</h6>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-gray-500 text-[10px]">Email:</span>
-                          <span className="font-semibold text-navy text-[11px] truncate">
-                            {currentChatSession.email || <span className="text-gray-400 italic font-normal">Not entered yet</span>}
-                          </span>
+                      {/* Agent Form */}
+                      <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-xs space-y-2.5">
+                        <h6 className="font-bold text-navy text-[10px] uppercase tracking-wider text-gray-400">
+                          Support Agent Identity
+                        </h6>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-navy block mb-1">
+                            Agent Display Name
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.agent_profile?.name || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                agent_profile: {
+                                  ...(formData.agent_profile || {
+                                    name: "Sarah Jenkins",
+                                    role: "Senior Publishing Consultant",
+                                    avatar: "",
+                                  }),
+                                  name: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="e.g. Sarah Jenkins"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-navy text-gray-800"
+                          />
                         </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-gray-500 text-[10px]">Phone:</span>
-                          <span className="font-semibold text-navy text-[11px]">
-                            {currentChatSession.phone || <span className="text-gray-400 italic font-normal">Not entered yet</span>}
-                          </span>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-navy block mb-1">
+                            Role / Job Title
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.agent_profile?.role || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                agent_profile: {
+                                  ...(formData.agent_profile || {
+                                    name: "Sarah Jenkins",
+                                    role: "Senior Publishing Consultant",
+                                    avatar: "",
+                                  }),
+                                  role: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="e.g. Senior Publishing Consultant"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-navy text-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-navy block mb-1">
+                            Avatar Photo URL
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.agent_profile?.avatar || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                agent_profile: {
+                                  ...(formData.agent_profile || {
+                                    name: "Sarah Jenkins",
+                                    role: "Senior Publishing Consultant",
+                                    avatar: "",
+                                  }),
+                                  avatar: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="https://..."
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-navy text-gray-800 font-mono text-[11px]"
+                          />
+                          {/* Quick pick avatars */}
+                          <div className="flex gap-1.5 mt-2">
+                            {[
+                              { label: "Sarah", url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150" },
+                              { label: "David", url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=150&h=150" },
+                              { label: "Elena", url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150&h=150" },
+                            ].map((preset, pIdx) => (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={() =>
+                                  setFormData({
+                                    ...formData,
+                                    agent_profile: {
+                                      ...(formData.agent_profile || {
+                                        name: "Sarah Jenkins",
+                                        role: "Senior Publishing Consultant",
+                                        avatar: "",
+                                      }),
+                                      avatar: preset.url,
+                                    },
+                                  })
+                                }
+                                className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-0.5 rounded cursor-pointer"
+                              >
+                                {preset.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-navy block mb-1">
+                            Greeting / Welcome Message
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={formData.agent_profile?.welcomeMessage || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                agent_profile: {
+                                  ...(formData.agent_profile || {
+                                    name: "Sarah Jenkins",
+                                    role: "Senior Publishing Consultant",
+                                    avatar: "",
+                                  }),
+                                  welcomeMessage: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="Message shown when visitor opens chat widget..."
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-navy text-gray-800"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold text-navy block mb-1">
+                            Status Text
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.agent_profile?.statusText || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                agent_profile: {
+                                  ...(formData.agent_profile || {
+                                    name: "Sarah Jenkins",
+                                    role: "Senior Publishing Consultant",
+                                    avatar: "",
+                                  }),
+                                  statusText: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="e.g. Online & replying instantly"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs outline-none focus:border-navy text-gray-800"
+                          />
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center p-6 text-gray-400 text-xs">
-                      No session selected
+
+                      {/* Save Agent Profile Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleSaveAgentProfile(formData.agent_profile)}
+                        className="w-full bg-gold hover:bg-gold-light text-navy text-xs font-bold py-2.5 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Check className="w-4 h-4 text-navy" />
+                        <span>Save &amp; Update Live Messenger</span>
+                      </button>
                     </div>
                   )}
                 </div>

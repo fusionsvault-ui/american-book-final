@@ -582,55 +582,79 @@ interface VisitorSession {
 const activeSessions: Record<string, VisitorSession> = {};
 
 function resolveClientGeo(req: express.Request, body?: any) {
-  // If client passes explicit geo info from browser/timeZone/navigator
-  const passedIp = body?.ip;
-  let ip = "72.229.28.185"; // Realistic default preview IP (New York, US)
-  if (passedIp && passedIp !== "127.0.0.1" && passedIp !== "::1") {
-    ip = passedIp;
-  } else {
-    const forwarded = req.headers["x-forwarded-for"];
-    if (typeof forwarded === "string" && forwarded) {
-      const first = forwarded.split(",")[0].trim();
-      if (first && first !== "127.0.0.1" && first !== "::1") ip = first;
-    } else if (typeof req.headers["x-real-ip"] === "string" && req.headers["x-real-ip"]) {
-      ip = req.headers["x-real-ip"] as string;
-    }
+  // 1. Resolve real client IP
+  let ip = "";
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded) {
+    const first = forwarded.split(",")[0].trim();
+    if (first && first !== "127.0.0.1" && first !== "::1") ip = first;
+  } else if (typeof req.headers["x-real-ip"] === "string" && req.headers["x-real-ip"]) {
+    ip = req.headers["x-real-ip"] as string;
+  } else if (req.socket?.remoteAddress && req.socket.remoteAddress !== "127.0.0.1" && req.socket.remoteAddress !== "::1") {
+    ip = req.socket.remoteAddress.replace(/^.*:/, "");
   }
 
-  // Parse user agent
+  // If client provided a valid public IP from client-side lookup, prefer it
+  if (body?.ip && body.ip !== "127.0.0.1" && body.ip !== "::1") {
+    ip = body.ip;
+  }
+
+  // 2. Parse user agent
   const ua = (req.headers["user-agent"] || "").toLowerCase();
   let browser = "Chrome";
   if (ua.includes("firefox")) browser = "Firefox";
   else if (ua.includes("safari") && !ua.includes("chrome")) browser = "Safari";
   else if (ua.includes("edg")) browser = "Edge";
 
-  let os = "macOS";
+  let os = "Desktop";
   if (ua.includes("windows")) os = "Windows";
+  else if (ua.includes("macintosh") || ua.includes("mac os")) os = "macOS";
   else if (ua.includes("iphone") || ua.includes("ipad")) os = "iOS";
   else if (ua.includes("android")) os = "Android";
   else if (ua.includes("linux")) os = "Linux";
 
   const device = (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) ? "Mobile" : "Desktop";
 
-  // Country and Flag lookup
-  const country = body?.country || "United States";
-  const countryCode = body?.countryCode || "US";
-  const flag = body?.flag || (countryCode === "PK" ? "🇵🇰" : countryCode === "GB" ? "🇬🇧" : countryCode === "CA" ? "🇨🇦" : countryCode === "AU" ? "🇦🇺" : countryCode === "AE" ? "🇦🇪" : "🇺🇸");
-  const city = body?.city || (countryCode === "PK" ? "Lahore" : countryCode === "GB" ? "London" : countryCode === "CA" ? "Toronto" : "New York");
-  const region = body?.region || (countryCode === "US" ? "NY" : "");
+  // 3. Resolve Country and Flag (Vercel / Cloudflare headers or client-sent)
+  const vercelCountry = (req.headers["x-vercel-ip-country"] as string) || (req.headers["cf-ipcountry"] as string) || "";
+  const vercelCity = (req.headers["x-vercel-ip-city"] as string) || "";
+  const vercelRegion = (req.headers["x-vercel-ip-country-region"] as string) || "";
+
+  const countryCode = (body?.countryCode || vercelCountry || "US").toUpperCase();
+  const country = body?.country || (vercelCountry ? vercelCountry : "Visitor Location");
+  const city = body?.city || (vercelCity ? decodeURIComponent(vercelCity) : "");
+  const region = body?.region || vercelRegion || "";
+
+  const getEmoji = (code: string) => {
+    if (!code || code.length !== 2) return "🌐";
+    try {
+      return String.fromCodePoint(...code.split("").map((c) => 127397 + c.charCodeAt(0)));
+    } catch (e) {
+      return "🌐";
+    }
+  };
+
+  const flag = body?.flag || getEmoji(countryCode);
 
   return {
-    ip,
+    ip: ip || "Online",
     country,
     countryCode,
     flag,
-    city,
+    city: city || (countryCode === "PK" ? "Pakistan" : countryCode === "GB" ? "United Kingdom" : ""),
     region,
     browser: `${browser} / ${os}`,
     device,
     os,
   };
 }
+
+// Endpoint to fetch client's real IP and geo headers directly
+app.get("/api/visitor/geo", (req, res) => {
+  const geo = resolveClientGeo(req);
+  return res.json(geo);
+});
+
 
 // GET Chat log telemetry (supports ?sessionId= filter)
 app.get("/api/chat-messages", async (req, res) => {
@@ -721,13 +745,13 @@ app.get("/api/chat/sessions", async (req, res) => {
         visitorName: activeObj?.visitorName || `Author Visitor #${sId.slice(-4)}`,
         email: activeObj?.email || "",
         phone: activeObj?.phone || "",
-        ip: activeObj?.ip || "72.229.28.185",
-        country: activeObj?.country || "United States",
-        countryCode: activeObj?.countryCode || "US",
-        flag: activeObj?.flag || "🇺🇸",
-        city: activeObj?.city || "New York",
-        region: activeObj?.region || "NY",
-        browser: activeObj?.browser || "Chrome / macOS",
+        ip: activeObj?.ip || "Online",
+        country: activeObj?.country || "Visitor",
+        countryCode: activeObj?.countryCode || "",
+        flag: activeObj?.flag || "🌐",
+        city: activeObj?.city || "",
+        region: activeObj?.region || "",
+        browser: activeObj?.browser || "Web Browser",
         device: activeObj?.device || "Desktop",
         currentPage: activeObj?.currentPage || "/",
         agentConnected: activeObj?.agentConnected || false,

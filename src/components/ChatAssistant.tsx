@@ -1,451 +1,486 @@
-import React, { useState, useEffect } from "react";
-import { X, Send, MessageCircle, User, Shield, Check, Globe, MapPin, Phone, Mail, Sparkles, UserCheck } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Send, MessageCircle, User, Shield, Check, Globe, MapPin, Phone, Mail, Sparkles, Minus, ChevronDown, CheckCheck } from "lucide-react";
+import { useCMS } from "./CMSContext";
+import { detectVisitorGeo, VisitorGeo } from "../lib/geo";
 
 interface ChatMessage {
+  id?: string;
+  sessionId?: string;
   from: "agent" | "user";
   text: string;
   timestamp?: string;
 }
 
-const consultant = {
-  name: "Sarah Jenkins",
-  role: "Senior Publishing Consultant",
-  department: "Author Advisory Guild",
-  location: "New York, NY",
-  countryFlag: "🇺🇸",
-  avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150",
-  bio: "12+ years guiding independent and commercial authors to Amazon #1 Bestseller & Barnes & Noble placement.",
-};
-
-const initialMessages: ChatMessage[] = [
-  { from: "agent", text: "Hello! Welcome to Beyond Book Publishing. 📖" },
-  {
-    from: "agent",
-    text: "I'm Sarah, your publishing consultant. Tell me about your book idea or manuscript!",
-  },
-];
-
-const quickChips = [
-  "I have a manuscript ready",
-  "I need a professional ghostwriter",
-  "Request a custom project quote",
-  "I want to self-publish on Amazon & Ingram",
+const DEFAULT_CHIPS = [
+  "I have a manuscript ready 📖",
+  "Request a custom project quote 📋",
+  "I need an expert ghostwriter ✍️",
+  "Self-publish on Amazon & Barnes & Noble 🚀",
 ];
 
 export const ChatAssistant: React.FC = () => {
-  const [bubbleVisible, setBubbleVisible] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(false);
-  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const { data: cms } = useCMS();
+  const agentProfile = cms.agent_profile || {
+    name: "Sarah Jenkins",
+    role: "Senior Publishing Consultant",
+    department: "Author Advisory Guild",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150",
+    welcomeMessage: "Hello! Welcome to Beyond Book Publishing. I'm Sarah, your senior publishing consultant. Tell me about your book idea or manuscript!",
+    statusText: "Online & replying instantly",
+  };
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [bubblePromptVisible, setBubblePromptVisible] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [typing, setTyping] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Live Agent Connection State
-  const [agentConnected, setAgentConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  // Visitor Profile State (Tawk.to style)
-  const [visitorName, setVisitorName] = useState(() => localStorage.getItem("bbp_visitor_name") || "");
-  const [visitorEmail, setVisitorEmail] = useState(() => localStorage.getItem("bbp_visitor_email") || "");
-  const [visitorPhone, setVisitorPhone] = useState(() => localStorage.getItem("bbp_visitor_phone") || "");
-  const [visitorGeo, setVisitorGeo] = useState<{
-    ip: string;
-    country: string;
-    countryCode: string;
-    flag: string;
-    city: string;
-  }>({
-    ip: "72.229.28.185",
-    country: "United States",
-    countryCode: "US",
-    flag: "🇺🇸",
-    city: "New York",
+  // Author details
+  const [visitorName, setVisitorName] = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("bbp_visitor_name") || "";
+    return "";
   });
-  const [profileSavedNotice, setProfileSavedNotice] = useState(false);
+  const [visitorEmail, setVisitorEmail] = useState(() => {
+    if (typeof window !== "undefined") return localStorage.getItem("bbp_visitor_email") || "";
+    return "";
+  });
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactSavedNotice, setContactSavedNotice] = useState(false);
+
+  // Dynamic Real Geolocation (No hardcoded IP or fake New York location!)
+  const [geo, setGeo] = useState<VisitorGeo>({
+    ip: "",
+    country: "Global",
+    countryCode: "US",
+    flag: "🌐",
+    city: "Online",
+    region: "",
+  });
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const getSessionId = () => {
-    let sId = sessionStorage.getItem("chat-session-id");
+    if (typeof window === "undefined") return "server_session";
+    let sId = sessionStorage.getItem("bbp_chat_session_id");
     if (!sId) {
-      sId = `author_${Math.random().toString(36).slice(2, 8)}`;
-      sessionStorage.setItem("chat-session-id", sId);
+      sId = `author_${Math.random().toString(36).slice(2, 9)}`;
+      sessionStorage.setItem("bbp_chat_session_id", sId);
     }
     return sId;
   };
 
+  // 1. Detect Real Visitor Location on Mount
   useEffect(() => {
-    if (sessionStorage.getItem("chat-seen")) return;
+    let mounted = true;
+    detectVisitorGeo().then((detected) => {
+      if (mounted && detected) {
+        setGeo(detected);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // 2. Delayed Initial Welcome Bubble
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("bbp_chat_dismissed")) return;
 
     const timer = setTimeout(() => {
-      setBubbleVisible(true);
-      setMessages(initialMessages);
-      setUnreadCount(initialMessages.length);
-      initialMessages.forEach((m) => triggerAnalyticsTracking(m.from, m.text));
-    }, 15000); // 15 sec delay
+      setBubblePromptVisible(true);
+    }, 12000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Site-wide visitor heartbeat (tracks active visitors & syncs IP/Flag)
+  // 3. Heartbeat: Sync active presence with real IP & Geo
   useEffect(() => {
-    const currentSessionId = getSessionId();
-    const sendVisitorHeartbeat = async () => {
-      const pagePath = typeof window !== "undefined" ? window.location.pathname : "/";
+    if (typeof window === "undefined") return;
+    const sessionId = getSessionId();
+    const pagePath = window.location.pathname || "/";
+
+    const sendHeartbeat = async () => {
       try {
         const { db } = await import("../lib/firebase");
         const { doc, setDoc } = await import("firebase/firestore");
-        await setDoc(doc(db, "visitor_sessions", currentSessionId), {
-          sessionId: currentSessionId,
-          visitorName: visitorName || `Author Visitor browsing ${pagePath}`,
-          email: visitorEmail || "",
-          phone: visitorPhone || "",
-          currentPage: pagePath,
-          country: visitorGeo.country,
-          countryCode: visitorGeo.countryCode,
-          flag: visitorGeo.flag,
-          city: visitorGeo.city,
-          ip: visitorGeo.ip,
-          lastSeen: new Date().toISOString(),
-          isOnline: true,
-        }, { merge: true });
+        await setDoc(
+          doc(db, "visitor_sessions", sessionId),
+          {
+            sessionId,
+            visitorName: visitorName || `Author Visitor browsing ${pagePath}`,
+            email: visitorEmail || "",
+            currentPage: pagePath,
+            country: geo.country,
+            countryCode: geo.countryCode,
+            flag: geo.flag,
+            city: geo.city,
+            ip: geo.ip,
+            lastSeen: new Date().toISOString(),
+            isOnline: true,
+          },
+          { merge: true }
+        );
       } catch (e) {}
 
       try {
-        const res = await fetch("/api/chat/heartbeat", {
+        await fetch("/api/chat/heartbeat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            sessionId: currentSessionId,
+            sessionId,
             visitorName: visitorName || `Author Visitor browsing ${pagePath}`,
             email: visitorEmail,
-            phone: visitorPhone,
             currentPage: pagePath,
-            country: visitorGeo.country,
-            countryCode: visitorGeo.countryCode,
-            flag: visitorGeo.flag,
-            city: visitorGeo.city,
-            ip: visitorGeo.ip,
+            country: geo.country,
+            countryCode: geo.countryCode,
+            flag: geo.flag,
+            city: geo.city,
+            ip: geo.ip,
           }),
         });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.session) {
-            if (json.session.agentConnected) {
-              setAgentConnected(true);
-            }
-            if (json.session.ip) {
-              setVisitorGeo({
-                ip: json.session.ip || visitorGeo.ip,
-                country: json.session.country || visitorGeo.country,
-                countryCode: json.session.countryCode || visitorGeo.countryCode,
-                flag: json.session.flag || visitorGeo.flag,
-                city: json.session.city || visitorGeo.city,
-              });
-            }
-          }
-        }
-      } catch (e) {
-        // Heartbeat error ignored
-      }
+      } catch (e) {}
     };
 
-    // Execute immediately on visitor arrival
-    sendVisitorHeartbeat();
-    const hbInterval = setInterval(sendVisitorHeartbeat, 20000);
-    return () => {
-      clearInterval(hbInterval);
-    };
-  }, [visitorName, visitorEmail, visitorPhone]);
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 25000);
+    return () => clearInterval(interval);
+  }, [visitorName, visitorEmail, geo]);
 
-  // Live admin reply listener when chat window is active
+  // 4. Real-time Firestore sync on chat_messages for this session
   useEffect(() => {
-    if (!open) return;
-    const currentSessionId = getSessionId();
+    const sessionId = getSessionId();
+    let unsub: (() => void) | undefined;
 
-    const fetchLiveMessages = async () => {
-      let serverMsgs: Array<{ from: "agent" | "user"; text: string }> = [];
+    (async () => {
       try {
-        const res = await fetch(`/api/chat-messages?sessionId=${currentSessionId}`);
+        const { db } = await import("../lib/firebase");
+        const { collection, onSnapshot, query } = await import("firebase/firestore");
+
+        unsub = onSnapshot(collection(db, "chat_messages"), (snapshot) => {
+          if (!snapshot.empty) {
+            const allDocs = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+            const sessionDocs = allDocs
+              .filter((m) => m.sessionId === sessionId)
+              .sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+
+            if (sessionDocs.length > 0) {
+              setMessages(sessionDocs);
+              // If window is minimized or closed and a new agent message arrived, increment unread
+              if (!isOpen) {
+                const agentMsgs = sessionDocs.filter((m) => m.from === "agent");
+                setUnreadCount(agentMsgs.length);
+              }
+            }
+          }
+        });
+      } catch (e) {
+        // Fallback to polling API
+      }
+    })();
+
+    // Initial load from server API
+    const loadFromApi = async () => {
+      try {
+        const res = await fetch(`/api/chat-messages?sessionId=${sessionId}`);
         if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json) && json.length > 0) {
-            serverMsgs = json;
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setMessages((prev) => (list.length > prev.length ? list : prev));
           }
         }
-      } catch (err) {
-        // Ignore poll error
-      }
-
-      // Direct Firestore fallback for Vercel
-      if (serverMsgs.length === 0) {
-        try {
-          const { db } = await import("../lib/firebase");
-          const { collection, getDocs } = await import("firebase/firestore");
-          const snap = await getDocs(collection(db, "chat_messages"));
-          if (!snap.empty) {
-            const all = snap.docs.map(d => d.data() as any);
-            serverMsgs = all
-              .filter(m => m.sessionId === currentSessionId)
-              .sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
-          }
-        } catch (e) {}
-      }
-
-      if (serverMsgs && serverMsgs.length > 0) {
-        setMessages((prev) => {
-          if (serverMsgs.length > prev.length) {
-            if (serverMsgs.some(m => m.from === "agent")) {
-              setAgentConnected(true);
-              setIsConnecting(false);
-            }
-            return serverMsgs;
-          }
-          return prev;
-        });
-      }
+      } catch (e) {}
     };
+    loadFromApi();
 
-    fetchLiveMessages();
-    const pollInterval = setInterval(fetchLiveMessages, 2500);
-    return () => clearInterval(pollInterval);
-  }, [open]);
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [isOpen]);
 
-  const triggerAnalyticsTracking = async (from: string, text: string) => {
+  // Auto-scroll on new message
+  useEffect(() => {
+    if (isOpen && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isOpen]);
+
+  // Open Chat Window
+  const handleOpenChat = () => {
+    setIsOpen(true);
+    setIsMinimized(false);
+    setBubblePromptVisible(false);
+    setUnreadCount(0);
+    sessionStorage.setItem("bbp_chat_dismissed", "1");
+
+    // If no messages yet, seed with initial welcome message
+    if (messages.length === 0) {
+      const welcome: ChatMessage = {
+        from: "agent",
+        text: agentProfile.welcomeMessage || "Hello! Welcome to Beyond Book Publishing. How can I assist with your book project today?",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([welcome]);
+      postMessageToServer("agent", welcome.text);
+    }
+  };
+
+  const handleCloseChat = () => {
+    setIsOpen(false);
+  };
+
+  const handleMinimizeChat = () => {
+    setIsMinimized(true);
+    setIsOpen(false);
+  };
+
+  // Post message to Firestore & backend server
+  const postMessageToServer = async (from: "user" | "agent", text: string) => {
     const sessionId = getSessionId();
-    const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     const now = new Date().toISOString();
+
+    const payload = {
+      id: msgId,
+      sessionId,
+      from,
+      text,
+      timestamp: now,
+    };
 
     try {
       const { db } = await import("../lib/firebase");
       const { doc, setDoc } = await import("firebase/firestore");
-      await setDoc(doc(db, "chat_messages", msgId), {
-        id: msgId,
-        sessionId,
-        from,
-        text,
-        timestamp: now,
-      });
-      await setDoc(doc(db, "visitor_sessions", sessionId), {
-        sessionId,
-        lastSeen: now,
-        lastMessage: text,
-      }, { merge: true });
+      await setDoc(doc(db, "chat_messages", msgId), payload);
+      await setDoc(
+        doc(db, "visitor_sessions", sessionId),
+        {
+          sessionId,
+          lastSeen: now,
+          lastMessage: text,
+          visitorName: visitorName || `Author Visitor #${sessionId.slice(-4)}`,
+          email: visitorEmail || "",
+          country: geo.country,
+          countryCode: geo.countryCode,
+          flag: geo.flag,
+          city: geo.city,
+          ip: geo.ip,
+          isOnline: true,
+        },
+        { merge: true }
+      );
     } catch (e) {}
 
     try {
       await fetch("/api/chat-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, from, text }),
+        body: JSON.stringify(payload),
       });
-    } catch (e) {
-      // Ignored
+    } catch (e) {}
+  };
+
+  const handleSendMessage = async (textToSend?: string) => {
+    const text = (textToSend !== undefined ? textToSend : inputValue).trim();
+    if (!text || isSending) return;
+
+    setIsSending(true);
+    setInputValue("");
+
+    const newMsg: ChatMessage = {
+      from: "user",
+      text,
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, newMsg]);
+
+    // Send to Firestore & backend
+    await postMessageToServer("user", text);
+    setIsSending(false);
+
+    // If visitor has not provided email yet, show contact prompt after 1st user message
+    if (!visitorEmail && messages.filter((m) => m.from === "user").length === 0) {
+      setTimeout(() => {
+        setShowContactForm(true);
+      }, 1000);
     }
   };
 
-  const startChat = () => {
-    setOpen(true);
-    setUnreadCount(0);
-    sessionStorage.setItem("chat-seen", "1");
-    if (messages.length === 0) {
-      setMessages(initialMessages);
+  const handleSaveContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitorName.trim() && !visitorEmail.trim()) return;
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("bbp_visitor_name", visitorName);
+      localStorage.setItem("bbp_visitor_email", visitorEmail);
     }
-  };
-
-  const dismissBubble = () => {
-    setBubbleVisible(false);
-    setMinimized(true);
-    sessionStorage.setItem("chat-seen", "1");
-  };
-
-  // Connect directly with live consultant (Sarah)
-  const handleConnectLiveAgent = async () => {
-    if (agentConnected || isConnecting) return;
-    setIsConnecting(true);
 
     const sessionId = getSessionId();
     try {
-      const res = await fetch("/api/chat/connect-agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
+      const { db } = await import("../lib/firebase");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(
+        doc(db, "visitor_sessions", sessionId),
+        {
           visitorName: visitorName || `Author Visitor #${sessionId.slice(-4)}`,
-          country: visitorGeo.country,
-          countryCode: visitorGeo.countryCode,
-          flag: visitorGeo.flag,
-          city: visitorGeo.city,
-          ip: visitorGeo.ip,
-        }),
-      });
+          email: visitorEmail,
+        },
+        { merge: true }
+      );
+    } catch (e) {}
 
-      if (res.ok) {
-        const json = await res.json();
-        setAgentConnected(true);
-        setIsConnecting(false);
-        if (json.message) {
-          setMessages((prev) => {
-            const exists = prev.some(m => m.text.includes("joined the chat"));
-            return exists ? prev : [...prev, json.message];
-          });
-        }
-      }
-    } catch (e) {
-      setIsConnecting(false);
-      setAgentConnected(true);
-    }
-  };
-
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    localStorage.setItem("bbp_visitor_name", visitorName);
-    localStorage.setItem("bbp_visitor_email", visitorEmail);
-    localStorage.setItem("bbp_visitor_phone", visitorPhone);
-
-    const sessionId = getSessionId();
     try {
       await fetch("/api/chat/visitor-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId,
-          visitorName: visitorName || `Author Visitor #${sessionId.slice(-4)}`,
+          visitorName,
           email: visitorEmail,
-          phone: visitorPhone,
-          country: visitorGeo.country,
-          countryCode: visitorGeo.countryCode,
-          flag: visitorGeo.flag,
-          city: visitorGeo.city,
-          ip: visitorGeo.ip,
+          country: geo.country,
+          countryCode: geo.countryCode,
+          flag: geo.flag,
+          city: geo.city,
+          ip: geo.ip,
         }),
       });
-      setProfileSavedNotice(true);
-      setTimeout(() => {
-        setProfileSavedNotice(false);
-        setShowProfileDrawer(false);
-      }, 1200);
-    } catch (err) {}
-  };
+    } catch (e) {}
 
-  const handleResponseSimulation = (userText: string) => {
-    // CRITICAL: If live agent is already connected, do NOT send canned automated bot responses!
-    if (agentConnected) {
-      return;
-    }
-
-    setTyping(true);
+    setContactSavedNotice(true);
     setTimeout(() => {
-      setTyping(false);
-      let reply =
-        "Thank you for contacting Beyond Book Publishing! A senior consultant is reviewing your message. You can also connect directly using the 'Connect Live Agent' button above.";
-      const query = userText.toLowerCase();
-
-      if (query.includes("manuscript") || query.includes("ready")) {
-        reply =
-          "That's fantastic! Our editorial and publishing team can evaluate your manuscript within 48 hours. Would you like a personalized evaluation and quote? 🚀";
-      } else if (query.includes("ghost") || query.includes("write")) {
-        reply =
-          "We pair authors with award-winning, U.S.-based ghostwriters across every genre. You retain 100% of royalties and copyright. Would you like to review sample excerpts? ✍️";
-      } else if (
-        query.includes("pric") ||
-        query.includes("cost") ||
-        query.includes("quote") ||
-        query.includes("package")
-      ) {
-        reply =
-          "We offer custom publishing packages tailored specifically to your book's word count and distribution goals. Would you like a custom quote breakdown? 📋";
-      } else if (query.includes("self") || query.includes("publish")) {
-        reply =
-          "Self-publishing is our core specialty! We coordinate Amazon KDP, IngramSpark, hardcover distribution, and library placement while you keep 100% of your royalties. 📚";
-      }
-
-      setMessages((prev) => [...prev, { from: "agent", text: reply }]);
-      triggerAnalyticsTracking("agent", reply);
-    }, 1200);
+      setContactSavedNotice(false);
+      setShowContactForm(false);
+    }, 1500);
   };
-
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    const newMsg: ChatMessage = { from: "user", text, timestamp: new Date().toISOString() };
-    setMessages((prev) => [...prev, newMsg]);
-    setInputValue("");
-    triggerAnalyticsTracking("user", text);
-
-    if (!agentConnected) {
-      handleResponseSimulation(text);
-    }
-  };
-
-  if (!bubbleVisible && !open) {
-    return (
-      <div className="fixed bottom-24 left-5 z-50">
-        <button
-          onClick={startChat}
-          className="bg-navy hover:bg-navy-light text-white w-12 h-12 rounded-full shadow-2xl border-2 border-gold flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          aria-label="Chat with Sarah"
-          title="Chat with Sarah"
-        >
-          <MessageCircle className="w-6 h-6 text-gold" />
-        </button>
-      </div>
-    );
-  }
 
   return (
-    <div className="fixed bottom-24 left-5 z-50 flex flex-col items-start gap-2" id="chat-assistant-panel">
-      {open ? (
-        <div
-          className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-[335px] sm:w-[350px] flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-200"
-          style={{ height: 520, maxHeight: "85vh" }}
-        >
-          {/* Header */}
-          <div className="bg-navy px-4 py-3 flex items-center justify-between border-b border-navy-light/40">
-            <div className="flex items-center gap-2.5">
+    <>
+      {/* ================= FLOATING LAUNCHER BUTTON & WELCOME BUBBLE ================= */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {/* Unread & Welcome Peek Bubble */}
+        {bubblePromptVisible && !isOpen && (
+          <div className="mb-3 max-w-xs sm:max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200/80 p-4 animate-in fade-in slide-in-from-bottom-3 duration-300 relative">
+            <button
+              onClick={() => {
+                setBubblePromptVisible(false);
+                sessionStorage.setItem("bbp_chat_dismissed", "1");
+              }}
+              className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+              aria-label="Dismiss chat prompt"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-start gap-3 cursor-pointer" onClick={handleOpenChat}>
               <div className="relative flex-shrink-0">
                 <img
-                  src={consultant.avatar}
-                  alt={consultant.name}
-                  width={38}
-                  height={38}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-gold"
+                  src={agentProfile.avatar}
+                  alt={agentProfile.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gold shadow-xs"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-navy" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white animate-pulse" />
               </div>
-              <div>
+              <div className="pr-4">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-white font-bold text-xs leading-tight">
-                    {consultant.name}
-                  </p>
-                  <span className="text-[11px]" title="Consultant Location">{consultant.countryFlag}</span>
+                  <h4 className="text-xs font-bold text-navy">{agentProfile.name}</h4>
+                  <span className="text-[10px] text-green-700 bg-green-50 px-1.5 py-0.2 rounded font-semibold">
+                    Online
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-gray-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                  <span>{agentConnected ? "Live Agent Connected" : "Publishing Consultant"}</span>
+                <p className="text-[11px] text-gray-600 mt-1 line-clamp-2 leading-relaxed">
+                  {agentProfile.welcomeMessage || "Hello! Have a question about publishing or ghostwriting? Let's chat live."}
+                </p>
+                <span className="text-[11px] font-bold text-gold inline-flex items-center gap-1 mt-2 hover:underline">
+                  Start Live Chat &rarr;
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Bubble Button */}
+        {!isOpen && (
+          <button
+            onClick={handleOpenChat}
+            className="group relative flex items-center gap-2.5 bg-navy hover:bg-[#1a2c42] text-white pl-4 pr-5 py-3.5 rounded-full shadow-2xl hover:shadow-gold/20 hover:scale-[1.02] transition-all duration-200 cursor-pointer border border-gold/40"
+            aria-label="Open live chat"
+          >
+            {/* Live pulsing indicator */}
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+
+            <div className="flex items-center gap-2">
+              <img
+                src={agentProfile.avatar}
+                alt={agentProfile.name}
+                className="w-7 h-7 rounded-full object-cover border border-gold/60"
+              />
+              <div className="text-left">
+                <div className="text-xs font-bold tracking-wide flex items-center gap-1">
+                  <span>Chat with {agentProfile.name?.split(" ")[0] || "Consultant"}</span>
+                </div>
+                <div className="text-[10px] text-emerald-400 font-medium -mt-0.5">
+                  {agentProfile.statusText || "Live Support Online"}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              {/* Tawk.to Profile & Geolocation Button */}
-              <button
-                type="button"
-                onClick={() => setShowProfileDrawer(!showProfileDrawer)}
-                className={`px-2 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                  showProfileDrawer
-                    ? "bg-gold text-navy font-bold shadow-xs"
-                    : "bg-white/10 hover:bg-white/20 text-white"
-                }`}
-                title="Edit Your Profile & Geolocation Info (Tawk.to Style)"
-              >
-                <User className="w-3.5 h-3.5 text-gold" />
-                <span>{visitorGeo.flag} Profile</span>
-              </button>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md animate-bounce">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        )}
+      </div>
 
+      {/* ================= LIVE CHAT MESSENGER WINDOW ================= */}
+      {isOpen && (
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[95vw] sm:w-[380px] md:w-[410px] h-[580px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-navy via-[#1a2e48] to-navy text-white p-4 border-b border-gold/30 flex items-center justify-between relative shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-shrink-0">
+                <img
+                  src={agentProfile.avatar}
+                  alt={agentProfile.name}
+                  className="w-11 h-11 rounded-full object-cover border-2 border-gold shadow-md"
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-navy animate-pulse" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm tracking-wide flex items-center gap-1.5">
+                  <span>{agentProfile.name}</span>
+                  <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-400/30">
+                    Live
+                  </span>
+                </h3>
+                <p className="text-[11px] text-gold/90 font-medium">
+                  {agentProfile.role}
+                </p>
+                <div className="flex items-center gap-1 text-[10px] text-gray-300 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>{agentProfile.statusText || "Replies in ~2 minutes"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
               <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 cursor-pointer"
+                onClick={handleMinimizeChat}
+                className="p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+                title="Minimize chat"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleCloseChat}
+                className="p-1.5 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                 title="Close chat"
               >
                 <X className="w-4 h-4" />
@@ -453,290 +488,176 @@ export const ChatAssistant: React.FC = () => {
             </div>
           </div>
 
-          {/* Connection Status Bar & Agent Trigger */}
-          <div className="bg-amber-50/90 border-b border-amber-200/60 px-3 py-1.5 flex items-center justify-between text-[11px]">
-            <div className="flex items-center gap-1.5 text-gray-700">
-              <span className={`w-2 h-2 rounded-full ${agentConnected ? "bg-green-500 animate-pulse" : "bg-amber-500"}`} />
-              <span className="font-semibold text-navy">
-                {agentConnected ? "Live Human Consultant Active" : "Author Support Chat"}
-              </span>
-              <span className="text-[10px] text-gray-400 font-mono hidden sm:inline">
-                ({visitorGeo.ip})
+          {/* Real-time Location & Telemetry Mini Banner */}
+          <div className="bg-slate-50 border-b border-gray-100 px-3.5 py-1.5 flex items-center justify-between text-[11px] text-gray-500">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-sm">{geo.flag}</span>
+              <span className="font-semibold text-slate-700 truncate">
+                {geo.city ? `${geo.city}, ` : ""}{geo.country}
               </span>
             </div>
-            {!agentConnected ? (
-              <button
-                type="button"
-                disabled={isConnecting}
-                onClick={handleConnectLiveAgent}
-                className="text-[10px] font-bold bg-navy text-white hover:bg-gold hover:text-navy px-2 py-0.5 rounded transition-all cursor-pointer flex items-center gap-1 shadow-xs"
-              >
-                <UserCheck className="w-3 h-3 text-gold" />
-                <span>{isConnecting ? "Connecting..." : "Connect Live Agent"}</span>
-              </button>
-            ) : (
-              <span className="text-[10px] font-bold text-green-700 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                <span>Connected</span>
-              </span>
-            )}
+            <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Direct Consultant Channel</span>
+            </div>
           </div>
 
-          {/* Tawk.to Style Visitor & Agent Profile Drawer */}
-          {showProfileDrawer ? (
-            <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 animate-in fade-in duration-150">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-                <div className="flex items-center gap-1.5 text-navy font-serif font-bold text-xs uppercase tracking-wider">
-                  <Globe className="w-3.5 h-3.5 text-gold" />
-                  <span>Session Geolocation &amp; Profile</span>
-                </div>
+          {/* Optional Inline Lead Info Box */}
+          {showContactForm && (
+            <div className="bg-amber-50/90 border-b border-amber-200 p-3 text-xs animate-in fade-in duration-200">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-bold text-navy flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-gold" />
+                  <span>Where can we email your quote?</span>
+                </span>
                 <button
                   type="button"
-                  onClick={() => setShowProfileDrawer(false)}
-                  className="text-gray-400 hover:text-gray-600 text-xs"
+                  onClick={() => setShowContactForm(false)}
+                  className="text-gray-400 hover:text-gray-600 text-[10px]"
                 >
-                  Back to chat
+                  Skip
                 </button>
               </div>
-
-              {/* Verified Geolocation & IP Card */}
-              <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-xs space-y-2 text-xs">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-500 font-medium">Country / Region</span>
-                  <span className="font-bold text-navy flex items-center gap-1.5">
-                    <span className="text-base">{visitorGeo.flag}</span>
-                    <span>{visitorGeo.country} ({visitorGeo.city})</span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                  <span className="text-gray-500 font-medium">Visitor IP Address</span>
-                  <span className="font-mono text-gray-800 font-semibold bg-gray-100 px-2 py-0.5 rounded text-[11px]">
-                    {visitorGeo.ip}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 font-medium">Session Status</span>
-                  <span className="text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded text-[10px] font-bold">
-                    🟢 Live Verified
-                  </span>
-                </div>
-              </div>
-
-              {/* Editable Visitor Details (Tawk.to pre-chat / contact card) */}
-              <form onSubmit={handleSaveProfile} className="bg-white rounded-xl p-3.5 border border-gray-200 shadow-xs space-y-2.5">
-                <h4 className="text-xs font-bold text-navy flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-gold" />
-                  <span>Author Contact Details</span>
-                </h4>
-                <p className="text-[10px] text-gray-400">
-                  Update your details so your dedicated publishing consultant can reach out with manuscript proposals.
-                </p>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Your Name</label>
+              <form onSubmit={handleSaveContact} className="space-y-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
                   <input
                     type="text"
                     value={visitorName}
                     onChange={(e) => setVisitorName(e.target.value)}
-                    placeholder="e.g. John Hemingway"
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gold outline-none text-slate-800"
+                    placeholder="Your Name"
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-xs outline-none focus:border-navy bg-white"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Email Address</label>
                   <input
                     type="email"
                     value={visitorEmail}
                     onChange={(e) => setVisitorEmail(e.target.value)}
-                    placeholder="author@example.com"
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gold outline-none text-slate-800"
+                    placeholder="Your Email"
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-xs outline-none focus:border-navy bg-white"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={visitorPhone}
-                    onChange={(e) => setVisitorPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gold outline-none text-slate-800"
-                  />
-                </div>
-
-                {profileSavedNotice && (
-                  <div className="bg-green-50 text-green-700 text-[11px] font-bold p-2 rounded-lg text-center flex items-center justify-center gap-1">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Profile updated and synced with consultant!</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full bg-navy hover:bg-navy-light text-white font-bold text-xs py-2 rounded-lg cursor-pointer transition-colors"
-                >
-                  Save Visitor Profile
-                </button>
-              </form>
-
-              {/* Consultant Bio */}
-              <div className="bg-white rounded-xl p-3 border border-gray-200 text-xs space-y-1.5">
-                <h5 className="font-bold text-navy text-[11px] uppercase tracking-wider text-gold">About Consultant</h5>
-                <p className="font-bold text-gray-800">{consultant.name}</p>
-                <p className="text-[11px] text-gray-500 leading-relaxed">{consultant.bio}</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Messages Flow */}
-              <div
-                className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/70"
-                id="chat-messages-container"
-              >
-                {/* Session Welcome Pill */}
-                <div className="text-center my-1">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 shadow-xs font-medium">
-                    <span>{visitorGeo.flag}</span>
-                    <span>Session encrypted · Connected to Beyond Book Guild</span>
+                <div className="flex items-center justify-between pt-0.5">
+                  <span className="text-[10px] text-gray-500">
+                    {contactSavedNotice ? "✅ Saved! Consultant will follow up." : "We respect author confidentiality."}
                   </span>
-                </div>
-
-                {messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                  <button
+                    type="submit"
+                    className="bg-navy hover:bg-gold hover:text-navy text-white text-[11px] font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer"
                   >
-                    {msg.from === "agent" && (
-                      <img
-                        src={consultant.avatar}
-                        alt={consultant.name}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 rounded-full object-cover mr-2 mt-1 flex-shrink-0 border border-gold"
-                      />
-                    )}
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Message Thread */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#fcfcfd]">
+            {/* Disclaimer & Security Badge */}
+            <div className="text-center py-1">
+              <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 bg-white border border-gray-200/80 px-2.5 py-0.5 rounded-full shadow-2xs font-mono">
+                <Shield className="w-2.5 h-2.5 text-gold" />
+                <span>256-Bit Encrypted Author Advisory Session</span>
+              </span>
+            </div>
+
+            {messages.map((msg, idx) => {
+              const isAgent = msg.from === "agent";
+              return (
+                <div
+                  key={msg.id || idx}
+                  className={`flex gap-2 items-end ${isAgent ? "justify-start" : "justify-end"}`}
+                >
+                  {isAgent && (
+                    <img
+                      src={agentProfile.avatar}
+                      alt={agentProfile.name}
+                      className="w-7 h-7 rounded-full object-cover border border-gold flex-shrink-0 mb-1"
+                    />
+                  )}
+
+                  <div className={`max-w-[78%] flex flex-col ${isAgent ? "items-start" : "items-end"}`}>
+                    <div className="flex items-center gap-1.5 mb-1 px-1">
+                      <span className="text-[10px] font-bold text-gray-500">
+                        {isAgent ? agentProfile.name : visitorName || "You"}
+                      </span>
+                      <span className="text-[9px] text-gray-400">
+                        {msg.timestamp
+                          ? new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          : ""}
+                      </span>
+                    </div>
+
                     <div
-                      className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed ${
-                        msg.from === "user"
-                          ? "bg-navy text-white rounded-br-sm shadow-xs font-normal"
-                          : "bg-white text-gray-800 shadow-xs rounded-bl-sm border border-gray-100"
+                      className={`p-3 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                        isAgent
+                          ? "bg-white text-gray-800 border border-gray-200/90 rounded-bl-xs"
+                          : "bg-navy text-white rounded-br-xs"
                       }`}
                     >
                       {msg.text}
                     </div>
-                  </div>
-                ))}
 
-                {typing && (
-                  <div className="flex justify-start items-end gap-2">
-                    <img
-                      src={consultant.avatar}
-                      alt={consultant.name}
-                      width={24}
-                      height={24}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                    <div className="bg-white shadow-xs border border-gray-100 px-3.5 py-2 rounded-2xl rounded-bl-sm flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
+                    {!isAgent && (
+                      <span className="text-[9px] text-gray-400 mt-0.5 flex items-center gap-0.5">
+                        <CheckCheck className="w-3 h-3 text-emerald-500" />
+                        <span>Delivered</span>
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {/* Quick suggestions when chat is starting */}
-              {messages.length <= 2 && (
-                <div className="px-3 pt-2 pb-1.5 flex flex-wrap gap-1 bg-white border-t border-gray-100">
-                  {quickChips.map((chip) => (
-                    <button
-                      key={chip}
-                      onClick={() => sendMessage(chip)}
-                      className="text-[11px] bg-gray-50 border border-gold/40 text-navy font-medium px-2.5 py-1 rounded-full hover:bg-gold hover:text-navy transition-colors cursor-pointer"
-                    >
-                      {chip}
-                    </button>
-                  ))}
                 </div>
-              )}
+              );
+            })}
 
-              {/* Chat Input Form */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendMessage(inputValue);
-                }}
-                className="flex items-center gap-2 px-3 py-2.5 border-t border-gray-100 bg-white"
-              >
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 text-xs border border-gray-200 rounded-full px-4 py-2 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition text-slate-800"
-                />
-                <button
-                  type="submit"
-                  disabled={!inputValue.trim()}
-                  className="w-8 h-8 bg-gold text-navy rounded-full flex items-center justify-center hover:bg-yellow-400 transition-colors disabled:opacity-40 cursor-pointer flex-shrink-0"
-                  aria-label="Send message"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-      ) : (
-        !minimized && (
-          <div className="flex flex-col items-start gap-2 animate-in slide-in-from-bottom-4 duration-300">
-            {/* Popover Bubble */}
-            <div className="relative bg-white rounded-2xl rounded-bl-none shadow-xl border border-gray-100 px-4 py-3 max-w-[260px]">
-              <button
-                onClick={dismissBubble}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-gray-300 hover:bg-gray-400 text-white rounded-full flex items-center justify-center transition-colors p-0.5 text-xs cursor-pointer"
-                style={{ fontSize: "9px" }}
-              >
-                <X className="w-3 h-3" />
-              </button>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-xs">{consultant.countryFlag}</span>
-                <p className="text-navy text-xs font-bold leading-snug">
-                  Publishing Advisory Active
-                </p>
-              </div>
-              <p className="text-gray-500 text-[11px] leading-relaxed">
-                Connect live with {consultant.name} for publishing guidance →
-              </p>
-            </div>
-
-            {/* Main Circle Trigger */}
-            <button onClick={startChat} className="flex items-center gap-2 group cursor-pointer text-left">
-              <div className="relative">
-                <img
-                  src={consultant.avatar}
-                  alt={consultant.name}
-                  width={52}
-                  height={52}
-                  className="w-13 h-13 rounded-full object-cover border-3 border-gold shadow-lg group-hover:scale-105 transition-transform"
-                  style={{ width: 52, height: 52, borderWidth: 3 }}
-                />
-                <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-              <div className="bg-navy text-white text-xs font-bold px-3 py-1.5 rounded-full shadow group-hover:bg-gold group-hover:text-navy transition-colors flex items-center gap-1.5">
-                <span>Chat with Sarah</span>
-                <span className="text-[10px]">{consultant.countryFlag}</span>
-              </div>
-            </button>
+            <div ref={messagesEndRef} />
           </div>
-        )
+
+          {/* Quick Suggestion Chips */}
+          <div className="px-3 py-1.5 bg-gray-50/80 border-t border-gray-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {DEFAULT_CHIPS.map((chip, cIdx) => (
+              <button
+                key={cIdx}
+                type="button"
+                onClick={() => handleSendMessage(chip)}
+                className="whitespace-nowrap text-[10px] font-medium bg-white hover:bg-gold/10 hover:border-gold/50 text-navy border border-gray-200 px-2.5 py-1 rounded-full transition-colors cursor-pointer flex-shrink-0"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          {/* Reply Input Bar */}
+          <div className="p-3 bg-white border-t border-gray-200">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Type your message to the consultant..."
+                className="flex-1 bg-gray-50 border border-gray-200 focus:bg-white focus:border-navy rounded-xl px-3.5 py-2.5 text-xs text-gray-800 outline-none transition-colors"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || isSending}
+                className="bg-navy hover:bg-gold hover:text-navy disabled:opacity-40 text-white p-2.5 rounded-xl transition-all cursor-pointer flex-shrink-0 shadow-xs"
+                aria-label="Send message"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+            <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 px-1">
+              <span>Press Enter to send</span>
+              <span>100% Author Royalties</span>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 };

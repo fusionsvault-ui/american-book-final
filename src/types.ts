@@ -124,3 +124,13 @@ export interface HostingSettings {
   providerName?: string;
   clientNotes?: string;
 }
+
+export interface AgentProfileSettings {
+  name: string;
+  role: string;
+  avatar: string;
+  welcomeMessage?: string;
+  department?: string;
+  statusText?: string;
+}
+
