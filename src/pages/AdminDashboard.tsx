@@ -318,7 +318,7 @@ export const AdminDashboard: React.FC = () => {
 
       // Local fallback verification
       const validUser = formData.admin_username || "admin";
-      const validPass = formData.admin_password || "admin123";
+      const validPass = formData.admin_password || "RRAdmin786110@seo";
       const cleanUser = loginUsername.trim().toLowerCase();
       if (
         (cleanUser === validUser.toLowerCase() || cleanUser === "fusionsvault@gmail.com") &&
@@ -335,7 +335,7 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (err) {
       const validUser = formData.admin_username || "admin";
-      const validPass = formData.admin_password || "admin123";
+      const validPass = formData.admin_password || "RRAdmin786110@seo";
       const cleanUser = loginUsername.trim().toLowerCase();
       if (
         (cleanUser === validUser.toLowerCase() || cleanUser === "fusionsvault@gmail.com") &&
@@ -1407,7 +1407,7 @@ export const AdminDashboard: React.FC = () => {
               { id: "seo", label: "SEO & Indexation", icon: <Search className="w-4 h-4" />, badge: formData.global_noindex !== false ? "NOINDEX" : undefined },
               { id: "contact", label: "Contact Details", icon: <Phone className="w-4 h-4" /> },
               { id: "leads", label: "Form Inquiries", icon: <Users className="w-4 h-4" />, badge: leads?.length },
-              { id: "hosting", label: "Hosting & Server", icon: <Server className="w-4 h-4" />, badge: "364 Days" },
+              { id: "hosting", label: "Hosting & Server", icon: <Server className="w-4 h-4" />, badge: hostingStats?.daysRemaining ? `${hostingStats.daysRemaining}d` : "364 Days" },
               { id: "tools", label: "Security & Tools", icon: <Database className="w-4 h-4" /> },
             ].map((menu) => {
               const active = activeTab === menu.id;
@@ -1420,6 +1420,7 @@ export const AdminDashboard: React.FC = () => {
                     if (editingService) setEditingService(null);
                     if (editingTestimonial) setEditingTestimonial(null);
                     if (editingBook) setEditingBook(null);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className={`flex items-center gap-3 px-4 py-3 text-xs font-semibold text-left transition-colors cursor-pointer whitespace-nowrap md:whitespace-normal ${
                     active
@@ -1496,7 +1497,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {/* Metric Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs space-y-1">
                   <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Live Visitors</span>
                   <div className="text-3xl font-serif font-black text-green-600 flex items-center gap-2">
@@ -1520,21 +1521,62 @@ export const AdminDashboard: React.FC = () => {
                   <div className="text-3xl font-serif font-black text-navy">{formData.blogs?.length || 0}</div>
                   <span className="text-[11px] text-gray-500 font-semibold">Guides with Schema.org</span>
                 </div>
+                <div 
+                  onClick={() => {
+                    setActiveTab("hosting");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="bg-white p-5 rounded-xl border border-gray-200 shadow-xs space-y-1 cursor-pointer hover:border-[#2271b1] transition-all col-span-2 lg:col-span-1"
+                  title="Click to view Hosting details"
+                >
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Hosting Active</span>
+                  <div className="text-3xl font-serif font-black text-navy flex items-baseline gap-1">
+                    <span>{hostingStats?.daysRemaining ?? 364}</span>
+                    <span className="text-xs font-sans text-gray-500 font-normal">Days</span>
+                  </div>
+                  <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> 100 GB &bull; Unlimited BW
+                  </span>
+                </div>
               </div>
 
               {/* Quick Navigation Cards */}
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
+                  <h3 className="font-serif font-bold text-navy text-base flex items-center gap-2">
+                    <Server className="w-5 h-5 text-gold" />
+                    <span>Hosting &amp; Server</span>
+                  </h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    100 GB SSD storage, unmetered bandwidth, and 1-year hosting active until Oct 12, 2027.
+                  </p>
+                  <div className="pt-1">
+                    <button
+                      onClick={() => {
+                        setActiveTab("hosting");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="bg-navy hover:bg-gold text-white hover:text-navy text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                    >
+                      View Hosting ({hostingStats?.daysRemaining ?? 364}d left)
+                    </button>
+                  </div>
+                </div>
+
                 <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
                   <h3 className="font-serif font-bold text-navy text-base flex items-center gap-2">
                     <Wrench className="w-5 h-5 text-gold" />
-                    <span>Edit 15 Service Detail Pages</span>
+                    <span>Edit 15 Services</span>
                   </h3>
                   <p className="text-xs text-gray-600 leading-relaxed">
                     Edit benefits, process blueprints, case examples, FAQs, and image alt tags for every publishing service page.
                   </p>
                   <div className="pt-1">
                     <button
-                      onClick={() => setActiveTab("services")}
+                      onClick={() => {
+                        setActiveTab("services");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                       className="bg-navy hover:bg-gold text-white hover:text-navy text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       Open Services Editor
@@ -1552,7 +1594,10 @@ export const AdminDashboard: React.FC = () => {
                   </p>
                   <div className="pt-1">
                     <button
-                      onClick={() => setActiveTab("live_chat")}
+                      onClick={() => {
+                        setActiveTab("live_chat");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                       className="bg-green-700 hover:bg-green-800 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       Open Live Chat ({liveVisitorCount} Online)
@@ -1570,7 +1615,10 @@ export const AdminDashboard: React.FC = () => {
                   </p>
                   <div className="pt-1">
                     <button
-                      onClick={() => setActiveTab("header_branding")}
+                      onClick={() => {
+                        setActiveTab("header_branding");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
                       className="bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                     >
                       Customize Header &amp; Logo
@@ -6338,7 +6386,7 @@ export const AdminDashboard: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={handleSave}
+                    onClick={() => handleSaveAll()}
                     disabled={saveStatus === "saving"}
                     className="bg-[#2271b1] hover:bg-[#135e96] text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs disabled:opacity-50"
                   >
@@ -6822,7 +6870,7 @@ export const AdminDashboard: React.FC = () => {
 
                 <div className="pt-2 flex justify-end">
                   <button
-                    onClick={handleSave}
+                    onClick={() => handleSaveAll()}
                     disabled={saveStatus === "saving"}
                     className="bg-navy hover:bg-gold text-white hover:text-navy text-xs font-extrabold px-6 py-2.5 rounded-lg transition-all cursor-pointer shadow-md flex items-center gap-2"
                   >
@@ -6866,7 +6914,7 @@ export const AdminDashboard: React.FC = () => {
                     <label className="block font-bold text-gray-700 mb-1">Admin Password</label>
                     <input
                       type="text"
-                      value={formData.admin_password || "admin123"}
+                      value={formData.admin_password || "RRAdmin786110@seo"}
                       onChange={(e) => updateField("admin_password", e.target.value)}
                       className="w-full bg-gray-50 border border-gray-300 rounded p-2 font-mono outline-none text-navy"
                     />

@@ -220,7 +220,7 @@ export const fallbackCMSData: CMSData = {
   ],
 
   admin_username: "admin",
-  admin_password: "admin123",
+  admin_password: "RRAdmin786110@seo",
 
   blogs: BLOG_POSTS,
   services: SERVICES,

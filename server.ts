@@ -233,12 +233,18 @@ const fallbackCMSData = {
     default_keywords: "Beyond Book Publishing, BeyondBookpublishing.com, book publishing, ghostwriting services, self publishing, book editing, copy editing, proofreading, book cover design, book marketing, Amazon KDP, IngramSpark",
   },
   custom_pages: [],
+  admin_username: "admin",
+  admin_password: "RRAdmin786110@seo",
 };
 
 let cmsContent = { ...fallbackCMSData };
 try {
   if (fs.existsSync(CMS_FILE)) {
     cmsContent = JSON.parse(fs.readFileSync(CMS_FILE, "utf-8"));
+    if (!cmsContent.admin_password || cmsContent.admin_password === "admin123") {
+      cmsContent.admin_password = "RRAdmin786110@seo";
+      fs.writeFileSync(CMS_FILE, JSON.stringify(cmsContent, null, 2), "utf-8");
+    }
   } else {
     fs.writeFileSync(CMS_FILE, JSON.stringify(fallbackCMSData, null, 2), "utf-8");
   }
@@ -254,10 +260,15 @@ if (firestoreDb) {
       if (snap.exists()) {
         const liveData = snap.data();
         cmsContent = { ...cmsContent, ...liveData };
+        if (!cmsContent.admin_password || cmsContent.admin_password === "admin123") {
+          cmsContent.admin_password = "RRAdmin786110@seo";
+          await fsSetDoc(fsDoc(firestoreDb, "cms", "website_content"), { admin_password: "RRAdmin786110@seo" }, { merge: true });
+        }
         console.log("[FIREBASE FIRESTORE] Synced live CMS configurations from Firestore.");
       } else {
         await fsSetDoc(fsDoc(firestoreDb, "cms", "website_content"), {
           ...cmsContent,
+          admin_password: "RRAdmin786110@seo",
           updatedAt: new Date().toISOString(),
         });
         console.log("[FIREBASE FIRESTORE] Initialized website_content in Firestore.");
@@ -276,19 +287,19 @@ app.post("/api/admin/login", async (req, res) => {
   }
 
   let validUser = "admin";
-  let validPass = "admin123";
+  let validPass = "RRAdmin786110@seo";
 
   if (mongoConnected) {
     try {
       const record = await CMSModel.findOne({ key: "website_cms" });
       if (record?.data) {
         validUser = record.data.admin_username || validUser;
-        validPass = record.data.admin_password || validPass;
+        validPass = (record.data.admin_password && record.data.admin_password !== "admin123") ? record.data.admin_password : validPass;
       }
     } catch (e) {}
   } else {
     validUser = cmsContent.admin_username || validUser;
-    validPass = cmsContent.admin_password || validPass;
+    validPass = (cmsContent.admin_password && cmsContent.admin_password !== "admin123") ? cmsContent.admin_password : validPass;
   }
 
   const cleanUser = String(username).trim().toLowerCase();
