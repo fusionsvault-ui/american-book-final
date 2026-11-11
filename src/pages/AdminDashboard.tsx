@@ -254,6 +254,7 @@ export const AdminDashboard: React.FC = () => {
     const interval = setInterval(fetchChatSessions, 4000);
 
     let unsubChat: (() => void) | undefined;
+    let unsubVisitor: (() => void) | undefined;
     (async () => {
       try {
         const { db } = await import("../lib/firebase");
@@ -263,12 +264,18 @@ export const AdminDashboard: React.FC = () => {
         }, (err) => {
           console.warn("[CHAT] Realtime Firestore sync error:", err);
         });
+        unsubVisitor = onSnapshot(collection(db, "visitor_sessions"), () => {
+          fetchChatSessions();
+        }, (err) => {
+          console.warn("[VISITOR] Realtime Firestore sync error:", err);
+        });
       } catch (e) {}
     })();
 
     return () => {
       clearInterval(interval);
       if (unsubChat) unsubChat();
+      if (unsubVisitor) unsubVisitor();
     };
   }, [isAuthenticated]);
 
@@ -277,12 +284,14 @@ export const AdminDashboard: React.FC = () => {
       const res = await fetch("/api/chat/sessions");
       if (res.ok) {
         const data = await res.json();
-        setLiveVisitorCount(data.activeCount || 1);
-        setChatSessions(data.sessions || []);
-        if (!activeChatSessionId && data.sessions && data.sessions.length > 0) {
-          setActiveChatSessionId(data.sessions[0].sessionId);
+        if (data.sessions && data.sessions.length > 0) {
+          setLiveVisitorCount(data.activeCount || data.sessions.length);
+          setChatSessions(data.sessions);
+          if (!activeChatSessionId && data.sessions.length > 0) {
+            setActiveChatSessionId(data.sessions[0].sessionId);
+          }
+          return;
         }
-        return;
       }
     } catch (e) {
       // Ignored

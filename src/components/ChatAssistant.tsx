@@ -101,7 +101,13 @@ export const ChatAssistant: React.FC = () => {
           email: visitorEmail || "",
           phone: visitorPhone || "",
           currentPage: pagePath,
+          country: visitorGeo.country,
+          countryCode: visitorGeo.countryCode,
+          flag: visitorGeo.flag,
+          city: visitorGeo.city,
+          ip: visitorGeo.ip,
           lastSeen: new Date().toISOString(),
+          isOnline: true,
         }, { merge: true });
       } catch (e) {}
 
@@ -144,10 +150,10 @@ export const ChatAssistant: React.FC = () => {
       }
     };
 
-    const initialTimer = setTimeout(sendVisitorHeartbeat, 3000);
-    const hbInterval = setInterval(sendVisitorHeartbeat, 25000);
+    // Execute immediately on visitor arrival
+    sendVisitorHeartbeat();
+    const hbInterval = setInterval(sendVisitorHeartbeat, 20000);
     return () => {
-      clearTimeout(initialTimer);
       clearInterval(hbInterval);
     };
   }, [visitorName, visitorEmail, visitorPhone]);

@@ -32,25 +32,29 @@ service cloud.firestore {
     // CMS Content collection (Pages, Blogs, SEO configurations)
     // Public read for live website visitors; Admin & CMS write access
     match /cms/{cmsId} {
-      allow get, list: if isValidId(cmsId);
+      allow get: if isValidId(cmsId);
+      allow list: if true;
       allow create, update, delete: if isValidId(cmsId);
     }
 
     // Inbound Leads and Consultation Requests
     match /leads/{leadId} {
-      allow get, list: if isValidId(leadId);
+      allow get: if isValidId(leadId);
+      allow list: if true;
       allow create, update, delete: if isValidId(leadId);
     }
 
     // Real-Time Chat Conversation Messages
     match /chat_messages/{messageId} {
-      allow get, list: if isValidId(messageId);
+      allow get: if isValidId(messageId);
+      allow list: if true;
       allow create, update, delete: if isValidId(messageId);
     }
 
     // Live Visitor Tracking & Chat Sessions
     match /visitor_sessions/{sessionId} {
-      allow get, list: if isValidId(sessionId);
+      allow get: if isValidId(sessionId);
+      allow list: if true;
       allow create, update, delete: if isValidId(sessionId);
     }
 
