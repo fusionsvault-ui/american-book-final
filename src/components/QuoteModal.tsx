@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Send, Check } from "lucide-react";
+import { submitLead } from "../lib/leads";
 
 interface QuoteModalProps {
   open: boolean;
@@ -54,16 +55,13 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({
     e.preventDefault();
     setSubmitting(true);
     try {
-      await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          message: `Service Interest: ${formData.service || "N/A"}\n\nMessage:\n${formData.message}`,
-          source: source,
-        }),
+      await submitLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service || "Free Quote Modal",
+        message: `Service Interest: ${formData.service || "N/A"}\n\nMessage:\n${formData.message}`,
+        source: source,
       });
     } catch (err) {
       console.error("Error submitting lead:", err);

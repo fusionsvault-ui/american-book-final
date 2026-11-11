@@ -32,28 +32,26 @@ service cloud.firestore {
     // CMS Content collection (Pages, Blogs, SEO configurations)
     // Public read for live website visitors; Admin & CMS write access
     match /cms/{cmsId} {
-      allow get: if isValidId(cmsId);
-      allow list: if true;
-      allow create, update: if isValidId(cmsId);
-      allow delete: if isValidId(cmsId) && isAdmin();
+      allow get, list: if isValidId(cmsId);
+      allow create, update, delete: if isValidId(cmsId);
     }
 
     // Inbound Leads and Consultation Requests
     match /leads/{leadId} {
-      allow get: if isValidId(leadId);
-      allow list: if true;
-      allow create: if isValidId(leadId) &&
-        incoming().fullName is string && incoming().fullName.size() <= 120 &&
-        incoming().email is string && incoming().email.size() <= 120;
-      allow update, delete: if isValidId(leadId);
+      allow get, list: if isValidId(leadId);
+      allow create, update, delete: if isValidId(leadId);
+    }
+
+    // Real-Time Chat Conversation Messages
+    match /chat_messages/{messageId} {
+      allow get, list: if isValidId(messageId);
+      allow create, update, delete: if isValidId(messageId);
     }
 
     // Live Visitor Tracking & Chat Sessions
     match /visitor_sessions/{sessionId} {
       allow get, list: if isValidId(sessionId);
-      allow create, update: if isValidId(sessionId) &&
-        incoming().sessionId is string && incoming().sessionId.size() <= 128;
-      allow delete: if isValidId(sessionId);
+      allow create, update, delete: if isValidId(sessionId);
     }
 
     // Admin role lookup collection

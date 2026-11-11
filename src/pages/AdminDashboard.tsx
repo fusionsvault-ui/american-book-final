@@ -218,20 +218,59 @@ export const AdminDashboard: React.FC = () => {
     setFormData(cms);
   }, [cms]);
 
-  // Fetch leads when leads or dashboard tab is active
+  // Fetch leads and attach realtime Firestore listener when authenticated
   useEffect(() => {
-    if (isAuthenticated && (activeTab === "leads" || activeTab === "dashboard")) {
-      fetchLeads();
-    }
-  }, [activeTab, isAuthenticated]);
+    if (!isAuthenticated) return;
+    fetchLeads();
 
-  // Live Chat Polling when live_chat or dashboard tab is active
+    let unsubLeads: (() => void) | undefined;
+    (async () => {
+      try {
+        const { db } = await import("../lib/firebase");
+        const { collection, onSnapshot } = await import("firebase/firestore");
+        unsubLeads = onSnapshot(collection(db, "leads"), (snap) => {
+          if (!snap.empty) {
+            const liveLeads = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            liveLeads.sort((a: any, b: any) => new Date(b.timestamp || b.createdAt || 0).getTime() - new Date(a.timestamp || a.createdAt || 0).getTime());
+            setLeads(liveLeads);
+          }
+        }, (err) => {
+          console.warn("[LEADS] Realtime Firestore sync error:", err);
+        });
+      } catch (e) {
+        // Fallback to fetchLeads
+      }
+    })();
+
+    return () => {
+      if (unsubLeads) unsubLeads();
+    };
+  }, [isAuthenticated]);
+
+  // Live Chat Polling & Real-time Firestore sync
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchChatSessions();
     const interval = setInterval(fetchChatSessions, 4000);
-    return () => clearInterval(interval);
-  }, [isAuthenticated, activeTab]);
+
+    let unsubChat: (() => void) | undefined;
+    (async () => {
+      try {
+        const { db } = await import("../lib/firebase");
+        const { collection, onSnapshot } = await import("firebase/firestore");
+        unsubChat = onSnapshot(collection(db, "chat_messages"), () => {
+          fetchChatSessions();
+        }, (err) => {
+          console.warn("[CHAT] Realtime Firestore sync error:", err);
+        });
+      } catch (e) {}
+    })();
+
+    return () => {
+      clearInterval(interval);
+      if (unsubChat) unsubChat();
+    };
+  }, [isAuthenticated]);
 
   const fetchChatSessions = async () => {
     try {
@@ -243,25 +282,111 @@ export const AdminDashboard: React.FC = () => {
         if (!activeChatSessionId && data.sessions && data.sessions.length > 0) {
           setActiveChatSessionId(data.sessions[0].sessionId);
         }
+        return;
       }
     } catch (e) {
       // Ignored
+    }
+
+    // Direct Firestore fallback for Vercel / serverless deployments
+    try {
+      const { db } = await import("../lib/firebase");
+      const { collection, getDocs } = await import("firebase/firestore");
+      const [msgSnap, sessSnap] = await Promise.all([
+        getDocs(collection(db, "chat_messages")),
+        getDocs(collection(db, "visitor_sessions")),
+      ]);
+
+      const sessionMap: Record<string, any> = {};
+      if (!msgSnap.empty) {
+        for (const doc of msgSnap.docs) {
+          const msg: any = { id: doc.id, ...doc.data() };
+          const sId = msg.sessionId || "default";
+          if (!sessionMap[sId]) {
+            sessionMap[sId] = {
+              sessionId: sId,
+              visitorName: `Visitor #${sId.slice(-4)}`,
+              messages: [],
+              lastMessage: "",
+              lastTimestamp: msg.timestamp || new Date().toISOString(),
+              isOnline: true,
+            };
+          }
+          sessionMap[sId].messages.push(msg);
+          sessionMap[sId].lastMessage = msg.text;
+          sessionMap[sId].lastTimestamp = msg.timestamp || new Date().toISOString();
+        }
+      }
+
+      if (!sessSnap.empty) {
+        for (const doc of sessSnap.docs) {
+          const sData: any = doc.data();
+          if (sessionMap[doc.id]) {
+            sessionMap[doc.id].visitorName = sData.visitorName || sessionMap[doc.id].visitorName;
+            sessionMap[doc.id].email = sData.email || "";
+            sessionMap[doc.id].phone = sData.phone || "";
+          } else {
+            sessionMap[doc.id] = {
+              sessionId: doc.id,
+              visitorName: sData.visitorName || `Visitor #${doc.id.slice(-4)}`,
+              email: sData.email || "",
+              phone: sData.phone || "",
+              messages: [],
+              lastMessage: "Active on site",
+              lastTimestamp: sData.lastSeen || new Date().toISOString(),
+              isOnline: true,
+            };
+          }
+        }
+      }
+
+      const sessionsList = Object.values(sessionMap).sort((a: any, b: any) =>
+        new Date(b.lastTimestamp).getTime() - new Date(a.lastTimestamp).getTime()
+      );
+      if (sessionsList.length > 0) {
+        setChatSessions(sessionsList);
+        setLiveVisitorCount(Math.max(1, sessionsList.length));
+        if (!activeChatSessionId) {
+          setActiveChatSessionId(sessionsList[0].sessionId);
+        }
+      }
+    } catch (fbErr) {
+      console.warn("[CHAT] Direct Firestore session fetch error:", fbErr);
     }
   };
 
   const fetchLeads = async () => {
     setIsLoadingLeads(true);
+    let loadedLeads: any[] = [];
     try {
       const res = await fetch("/api/leads");
       if (res.ok) {
         const data = await res.json();
-        setLeads(data);
+        if (Array.isArray(data) && data.length > 0) {
+          loadedLeads = data;
+        }
       }
     } catch (err) {
-      console.error("Error fetching leads:", err);
-    } finally {
-      setIsLoadingLeads(false);
+      console.warn("API leads fetch fallback:", err);
     }
+
+    // Direct Firestore fallback for Vercel / serverless deployments
+    if (loadedLeads.length === 0) {
+      try {
+        const { db } = await import("../lib/firebase");
+        const { collection, getDocs } = await import("firebase/firestore");
+        const snap = await getDocs(collection(db, "leads"));
+        if (!snap.empty) {
+          loadedLeads = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          loadedLeads.sort((a: any, b: any) => new Date(b.timestamp || b.createdAt || 0).getTime() - new Date(a.timestamp || a.createdAt || 0).getTime());
+        }
+      } catch (fbErr) {
+        console.warn("Direct Firestore leads fetch error:", fbErr);
+      }
+    }
+
+    setLeads(loadedLeads);
+    setIsLoadingLeads(false);
   };
 
   // ================= HOSTING & INFRASTRUCTURE STATS =================
@@ -393,22 +518,44 @@ export const AdminDashboard: React.FC = () => {
   const handleSendAdminReply = async () => {
     if (!adminReplyText.trim() || !activeChatSessionId) return;
     setIsSendingReply(true);
+    const text = adminReplyText.trim();
+    const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const now = new Date().toISOString();
+
     try {
-      const res = await fetch("/api/chat/reply", {
+      const { db } = await import("../lib/firebase");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "chat_messages", msgId), {
+        id: msgId,
+        sessionId: activeChatSessionId,
+        from: "agent",
+        text,
+        timestamp: now,
+      });
+      await setDoc(doc(db, "visitor_sessions", activeChatSessionId), {
+        sessionId: activeChatSessionId,
+        agentConnected: true,
+        lastSeen: now,
+        lastMessage: text,
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Direct Firestore admin reply sync:", e);
+    }
+
+    try {
+      await fetch("/api/chat/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: activeChatSessionId,
-          text: adminReplyText.trim(),
+          text,
         }),
       });
-      if (res.ok) {
-        setAdminReplyText("");
-        await fetchChatSessions();
-      }
     } catch (err) {
-      alert("Failed to send reply to visitor.");
+      // API error fallback
     } finally {
+      setAdminReplyText("");
+      await fetchChatSessions();
       setIsSendingReply(false);
     }
   };

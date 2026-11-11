@@ -636,15 +636,30 @@ function resolveClientGeo(req: express.Request, body?: any) {
 app.get("/api/chat-messages", async (req, res) => {
   const { sessionId } = req.query;
   let allMsgs: any[] = [];
-  if (mongoConnected) {
+
+  if (firestoreDb) {
     try {
-      allMsgs = await ChatMessageModel.find().sort({ timestamp: 1 });
+      const snap = await fsGetDocs(fsCollection(firestoreDb, "chat_messages"));
+      if (!snap.empty) {
+        allMsgs = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+        allMsgs.sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+      }
     } catch (err) {
-      console.error("[CMS DB] Error fetching chat logs from Mongo:", err);
+      console.warn("[FIREBASE FIRESTORE] Error reading chat messages:", err);
+    }
+  }
+
+  if (allMsgs.length === 0) {
+    if (mongoConnected) {
+      try {
+        allMsgs = await ChatMessageModel.find().sort({ timestamp: 1 });
+      } catch (err) {
+        console.error("[CMS DB] Error fetching chat logs from Mongo:", err);
+        allMsgs = chatMessages;
+      }
+    } else {
       allMsgs = chatMessages;
     }
-  } else {
-    allMsgs = chatMessages;
   }
 
   if (sessionId) {
@@ -656,21 +671,47 @@ app.get("/api/chat-messages", async (req, res) => {
 // GET Live Chat Sessions Summary with active visitor count & tawk.to profiles
 app.get("/api/chat/sessions", async (req, res) => {
   const now = Date.now();
-  // Live threshold: active within last 3 minutes (180,000 ms)
-  const activeCount = Object.values(activeSessions).filter((s) => now - s.lastSeen < 180000).length;
-
   let allMessages: any[] = [];
-  if (mongoConnected) {
+  const sessionMap: Record<string, any> = {};
+
+  if (firestoreDb) {
     try {
-      allMessages = await ChatMessageModel.find().sort({ timestamp: 1 });
-    } catch (e) {
-      allMessages = chatMessages;
+      const [msgSnap, sessSnap] = await Promise.all([
+        fsGetDocs(fsCollection(firestoreDb, "chat_messages")),
+        fsGetDocs(fsCollection(firestoreDb, "visitor_sessions")),
+      ]);
+      if (!msgSnap.empty) {
+        allMessages = msgSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+      }
+      if (!sessSnap.empty) {
+        for (const d of sessSnap.docs) {
+          const sData = d.data();
+          activeSessions[d.id] = {
+            ...(activeSessions[d.id] || {}),
+            ...sData,
+            lastSeen: sData.lastSeen ? new Date(sData.lastSeen).getTime() : Date.now(),
+          };
+        }
+      }
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error reading chat sessions from Firestore:", err);
     }
-  } else {
-    allMessages = chatMessages;
   }
 
-  const sessionMap: Record<string, any> = {};
+  if (allMessages.length === 0) {
+    if (mongoConnected) {
+      try {
+        allMessages = await ChatMessageModel.find().sort({ timestamp: 1 });
+      } catch (e) {
+        allMessages = chatMessages;
+      }
+    } else {
+      allMessages = chatMessages;
+    }
+  }
+
+  const activeCount = Object.values(activeSessions).filter((s) => now - (s.lastSeen || 0) < 180000).length;
+
   for (const msg of allMessages) {
     const sId = msg.sessionId || "default";
     if (!sessionMap[sId]) {
@@ -694,7 +735,7 @@ app.get("/api/chat/sessions", async (req, res) => {
         messages: [],
         lastMessage: "",
         lastTimestamp: msg.timestamp || new Date().toISOString(),
-        isOnline: activeObj ? now - activeObj.lastSeen < 180000 : false,
+        isOnline: activeObj ? now - (activeObj.lastSeen || 0) < 180000 : false,
       };
     }
     sessionMap[sId].messages.push(msg);
@@ -704,7 +745,7 @@ app.get("/api/chat/sessions", async (req, res) => {
 
   // Also include any active session with no messages yet
   for (const [sId, sObj] of Object.entries(activeSessions)) {
-    if (!sessionMap[sId] && now - sObj.lastSeen < 180000) {
+    if (!sessionMap[sId] && now - (sObj.lastSeen || 0) < 180000) {
       sessionMap[sId] = {
         sessionId: sId,
         visitorName: sObj.visitorName || `Author Visitor #${sId.slice(-4)}`,
@@ -723,7 +764,7 @@ app.get("/api/chat/sessions", async (req, res) => {
         notes: sObj.notes || "",
         messages: [],
         lastMessage: "Browsing website...",
-        lastTimestamp: new Date(sObj.lastSeen).toISOString(),
+        lastTimestamp: new Date(sObj.lastSeen || now).toISOString(),
         isOnline: true,
       };
     }
@@ -751,12 +792,27 @@ app.post("/api/chat/reply", async (req, res) => {
     activeSessions[sessionId].agentConnected = true;
   }
 
+  const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   const replyData = {
+    id: msgId,
     sessionId,
     from: "agent",
     text,
     timestamp: new Date().toISOString(),
   };
+
+  if (firestoreDb) {
+    try {
+      await fsSetDoc(fsDoc(firestoreDb, "chat_messages", msgId), replyData);
+      await fsSetDoc(fsDoc(firestoreDb, "visitor_sessions", sessionId), {
+        sessionId,
+        agentConnected: true,
+        lastSeen: new Date().toISOString(),
+      }, { merge: true });
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error saving agent reply to Firestore:", err);
+    }
+  }
 
   if (mongoConnected) {
     try {
@@ -879,16 +935,24 @@ app.post("/api/chat/heartbeat", (req, res) => {
 
 // API leads submission ingestion route
 app.post("/api/leads", async (req, res) => {
-  const { name, email, phone, message, source } = req.body;
-  const leadId = `lead_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const { name, email, phone, message, source, service } = req.body;
+  const leadId = req.body.id || `lead_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const cleanName = (name || req.body.fullName || "Anonymous").trim();
+  const cleanEmail = (email || "").trim();
+  const now = new Date().toISOString();
+
   const leadData = {
     id: leadId,
-    name: name || "Anonymous",
-    email: email || "",
+    name: cleanName,
+    fullName: cleanName,
+    email: cleanEmail,
     phone: phone || "",
+    service: service || req.body.service || "General Inquiry",
     message: message || "",
     source: source || "unknown",
-    timestamp: new Date().toISOString(),
+    timestamp: now,
+    createdAt: now,
+    status: "new",
   };
 
   // 1. Permanently Save to Cloud Firebase Firestore
@@ -933,12 +997,28 @@ app.post("/api/chat-messages", async (req, res) => {
     lastSeen: Date.now(),
   };
 
+  const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const now = new Date().toISOString();
   const msgData = {
+    id: msgId,
     sessionId: currentSessionId,
     from: from || "user",
     text: text || "",
-    timestamp: new Date().toISOString(),
+    timestamp: now,
   };
+
+  if (firestoreDb) {
+    try {
+      await fsSetDoc(fsDoc(firestoreDb, "chat_messages", msgId), msgData);
+      await fsSetDoc(fsDoc(firestoreDb, "visitor_sessions", currentSessionId), {
+        sessionId: currentSessionId,
+        lastSeen: now,
+        lastMessage: text || "",
+      }, { merge: true });
+    } catch (err) {
+      console.warn("[FIREBASE FIRESTORE] Error saving chat message to Firestore:", err);
+    }
+  }
 
   if (mongoConnected) {
     try {

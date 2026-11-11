@@ -5,6 +5,7 @@ import { Breadcrumbs } from "../components/Breadcrumbs";
 import { QuoteModal } from "../components/QuoteModal";
 import { PRICING_PACKAGES, PRICING_CATEGORIES } from "../data/websiteData";
 import { Star, Check, Sparkles, ChevronRight, FileText, ShieldCheck, Clock, Award, Phone } from "lucide-react";
+import { submitLead } from "../lib/leads";
 
 export const Pricing: React.FC = () => {
   const { data: cms } = useCMS();
@@ -25,17 +26,13 @@ export const Pricing: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: quoteName,
-          email: quoteEmail,
-          phone: quotePhone,
-          service: quoteService,
-          message: `Custom Quote Request: Service: ${quoteService}. Details: ${quoteDetails || "Author requested direct quote breakdown"}`,
-          source: "pricing-quote-form",
-        }),
+      await submitLead({
+        name: quoteName,
+        email: quoteEmail,
+        phone: quotePhone,
+        service: quoteService,
+        message: `Custom Quote Request: Service: ${quoteService}. Details: ${quoteDetails || "Author requested direct quote breakdown"}`,
+        source: "pricing-quote-form",
       });
     } catch (err) {
       console.error(err);

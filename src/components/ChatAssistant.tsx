@@ -93,6 +93,19 @@ export const ChatAssistant: React.FC = () => {
     const sendVisitorHeartbeat = async () => {
       const pagePath = typeof window !== "undefined" ? window.location.pathname : "/";
       try {
+        const { db } = await import("../lib/firebase");
+        const { doc, setDoc } = await import("firebase/firestore");
+        await setDoc(doc(db, "visitor_sessions", currentSessionId), {
+          sessionId: currentSessionId,
+          visitorName: visitorName || `Author Visitor browsing ${pagePath}`,
+          email: visitorEmail || "",
+          phone: visitorPhone || "",
+          currentPage: pagePath,
+          lastSeen: new Date().toISOString(),
+        }, { merge: true });
+      } catch (e) {}
+
+      try {
         const res = await fetch("/api/chat/heartbeat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -145,26 +158,45 @@ export const ChatAssistant: React.FC = () => {
     const currentSessionId = getSessionId();
 
     const fetchLiveMessages = async () => {
+      let serverMsgs: Array<{ from: "agent" | "user"; text: string }> = [];
       try {
         const res = await fetch(`/api/chat-messages?sessionId=${currentSessionId}`);
         if (res.ok) {
-          const serverMsgs: Array<{ from: "agent" | "user"; text: string }> = await res.json();
-          if (serverMsgs && serverMsgs.length > 0) {
-            setMessages((prev) => {
-              if (serverMsgs.length > prev.length) {
-                // If there's an agent reply, ensure agentConnected is set to true
-                if (serverMsgs.some(m => m.from === "agent")) {
-                  setAgentConnected(true);
-                  setIsConnecting(false);
-                }
-                return serverMsgs;
-              }
-              return prev;
-            });
+          const json = await res.json();
+          if (Array.isArray(json) && json.length > 0) {
+            serverMsgs = json;
           }
         }
       } catch (err) {
         // Ignore poll error
+      }
+
+      // Direct Firestore fallback for Vercel
+      if (serverMsgs.length === 0) {
+        try {
+          const { db } = await import("../lib/firebase");
+          const { collection, getDocs } = await import("firebase/firestore");
+          const snap = await getDocs(collection(db, "chat_messages"));
+          if (!snap.empty) {
+            const all = snap.docs.map(d => d.data() as any);
+            serverMsgs = all
+              .filter(m => m.sessionId === currentSessionId)
+              .sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+          }
+        } catch (e) {}
+      }
+
+      if (serverMsgs && serverMsgs.length > 0) {
+        setMessages((prev) => {
+          if (serverMsgs.length > prev.length) {
+            if (serverMsgs.some(m => m.from === "agent")) {
+              setAgentConnected(true);
+              setIsConnecting(false);
+            }
+            return serverMsgs;
+          }
+          return prev;
+        });
       }
     };
 
@@ -174,8 +206,28 @@ export const ChatAssistant: React.FC = () => {
   }, [open]);
 
   const triggerAnalyticsTracking = async (from: string, text: string) => {
+    const sessionId = getSessionId();
+    const msgId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const now = new Date().toISOString();
+
     try {
-      const sessionId = getSessionId();
+      const { db } = await import("../lib/firebase");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "chat_messages", msgId), {
+        id: msgId,
+        sessionId,
+        from,
+        text,
+        timestamp: now,
+      });
+      await setDoc(doc(db, "visitor_sessions", sessionId), {
+        sessionId,
+        lastSeen: now,
+        lastMessage: text,
+      }, { merge: true });
+    } catch (e) {}
+
+    try {
       await fetch("/api/chat-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

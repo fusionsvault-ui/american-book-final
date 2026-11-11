@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MessageCircle, X, Send, Phone } from "lucide-react";
+import { submitLead } from "../lib/leads";
 
 export const FloatingCTA: React.FC = () => {
   const [visible, setVisible] = useState(false);
@@ -22,15 +23,12 @@ export const FloatingCTA: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          message: formData.message,
-          source: "floating-cta",
-        }),
+      await submitLead({
+        name: formData.name,
+        email: "",
+        phone: formData.phone,
+        message: formData.message,
+        source: "floating-cta",
       });
     } catch (err) {
       console.error(err);

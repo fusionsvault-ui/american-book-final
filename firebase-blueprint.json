@@ -44,15 +44,24 @@
       "description": "Contact form submissions and book consultation requests",
       "type": "object",
       "properties": {
-        "fullName": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier"
+        },
+        "name": {
           "type": "string",
           "description": "Name of author or prospect",
-          "maxLength": 120
+          "maxLength": 150
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full name alias",
+          "maxLength": 150
         },
         "email": {
           "type": "string",
           "description": "Email address",
-          "maxLength": 120
+          "maxLength": 150
         },
         "phone": {
           "type": "string",
@@ -62,6 +71,11 @@
         "service": {
           "type": "string",
           "description": "Requested publishing service",
+          "maxLength": 150
+        },
+        "source": {
+          "type": "string",
+          "description": "Origin of lead",
           "maxLength": 100
         },
         "message": {
@@ -69,17 +83,47 @@
           "description": "Manuscript description or inquiry details",
           "maxLength": 5000
         },
-        "createdAt": {
+        "timestamp": {
           "type": "string",
           "description": "Timestamp of inquiry"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp alias"
         },
         "status": {
           "type": "string",
           "description": "Lead processing status",
           "enum": ["new", "contacted", "converted", "archived"]
         }
+      }
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Real-time chat messages between visitors and admin",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Associated session ID",
+          "maxLength": 128
+        },
+        "from": {
+          "type": "string",
+          "description": "Sender identifier (user or admin)",
+          "maxLength": 30
+        },
+        "text": {
+          "type": "string",
+          "description": "Message content",
+          "maxLength": 3000
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp"
+        }
       },
-      "required": ["fullName", "email"]
+      "required": ["sessionId", "from", "text"]
     },
     "VisitorSession": {
       "title": "VisitorSession",
@@ -122,6 +166,10 @@
     "/leads/{leadId}": {
       "schema": "Lead",
       "description": "Inbound author leads and contact inquiries"
+    },
+    "/chat_messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Live chat conversation messages"
     },
     "/visitor_sessions/{sessionId}": {
       "schema": "VisitorSession",

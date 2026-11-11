@@ -3,6 +3,7 @@ import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Mail, Phone, Clock, MapPin, Send, CheckCircle2, Star } from "lucide-react";
+import { submitLead } from "../lib/leads";
 
 export const Contact: React.FC = () => {
   const { data: cms } = useCMS();
@@ -20,16 +21,13 @@ export const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          message: `Inquiry details: Genre=${formData.genre}, Stage=${formData.stage}, Words=${formData.words}, Details=${formData.message}`,
-          source: "contact-page-form",
-        }),
+      await submitLead({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: `Genre: ${formData.genre} (${formData.stage})`,
+        message: `Inquiry details: Genre=${formData.genre}, Stage=${formData.stage}, Words=${formData.words}, Details=${formData.message}`,
+        source: "contact-page-form",
       });
     } catch (err) {
       console.error(err);

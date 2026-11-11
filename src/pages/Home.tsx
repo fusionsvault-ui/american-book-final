@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { InViewSection } from "../components/InViewSection";
 import { useCMS } from "../components/CMSContext";
 import { Layout } from "../components/Layout";
+import { submitLead } from "../lib/leads";
 const QuoteModal = React.lazy(() => import("../components/QuoteModal").then(m => ({ default: m.QuoteModal })));
 const BookCarousel = React.lazy(() => import("../components/BookCarousel").then(m => ({ default: m.BookCarousel })));
 const GenreSection = React.lazy(() => import("../components/GenreSection").then(m => ({ default: m.GenreSection })));
@@ -126,13 +127,12 @@ export const Home: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          source: "main-hero-form"
-        })
+      await submitLead({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        message: form.message,
+        source: "main-hero-form"
       });
       setFormSubmitted(true);
     } catch (err) {
